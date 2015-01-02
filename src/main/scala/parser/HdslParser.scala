@@ -1,7 +1,8 @@
 package parser
 
-import scala.util.parsing.combinator._
-import parser.structures._
+import parser.structures.Signal
+
+import scala.util.parsing.combinator.JavaTokenParsers
 
 object HdslParser extends JavaTokenParsers {
   
@@ -13,7 +14,7 @@ object HdslParser extends JavaTokenParsers {
   
   def args: Parser[Map[String, String]] = repsep(arg, ",") ^^ (Map() ++ _)
   
-  def arg: Parser[Tuple2[String, String]] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => (name, argType)}
+  def arg: Parser[(String, String)] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => (name, argType)}
   
   def comment: Parser[String] = "//.*".r
 
