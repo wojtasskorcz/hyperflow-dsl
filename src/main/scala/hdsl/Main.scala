@@ -1,4 +1,6 @@
-import parser.HdslParser
+package hdsl
+
+import hdsl.parser.HdslParser
 
 object Main {
   

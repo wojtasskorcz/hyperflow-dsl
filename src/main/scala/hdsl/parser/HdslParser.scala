@@ -1,6 +1,6 @@
-package parser
+package hdsl.parser
 
-import parser.structures.Signal
+import hdsl.parser.structures.Signal
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
