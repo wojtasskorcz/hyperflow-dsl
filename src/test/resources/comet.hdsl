@@ -1,0 +1,60 @@
+signal XmlData(path: String)
+signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
+signal Stations()
+signal DataParts()
+
+// process ReadDataSets(x: XmlData, c: sticky Config): Stations {
+//   genXmlCollection(x, c)
+// }
+
+// process PartitionData(s: Stations): DataParts {
+//   partitionData(s)
+// }
+
+// // when not declaring a return type, a generic Signal type is returned
+// // something like Object type in Java
+// process ComputeStats(d: DataParts, c: sticky Config) {
+//   parlevel = 3
+//   computeStats(d, c)
+// }
+
+// // same as with 'ComputeStats' - leaving argument type undeclared…
+// // … implicitly sets it to Signal
+// process PlotGraphs(stats) {
+//   parlevel = 3
+//   plotData(stats)
+// }
+
+// // like in Scala, returning Unit means, that no usable value is returned
+// // process CollectPlots(graph, cnt: CountSignal): Unit {
+// //  graph.count = cnt
+// process CollectPlots(graph): Unit {
+//   collectGraphs(graph)
+// }
+
+// xml = XmlData("data.xml")
+// config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+
+// // processes are first-order citizens (like functions in functional languages)
+// p = ReadDataSets
+// p.ordering = true
+// p.config.args = ""
+
+// // type of 'stations' is inferred from the return value of 'ReadDataSets'
+// // 'p' should be invoked only once, as each process instance has only one…
+// // …set of inputs and outputs; invoking it again will cause compilation error
+// stations = p(xml, config)
+// (xml, config) -> p -> stations
+
+// // invoking a process inline automatically creates a new instance of it
+// dataParts = PartitionData(stations)
+// (xml, config) -> p -> stations -> PartitionData -> dataParts
+
+// stats = ComputeStats(dataParts, config)
+// graph = PlotGraphs(stats)
+
+// // as every signal has only one source ('stations' was emitted from 'p')...
+// // … we can attach a count-output to the process that created this signal
+// // CollectPlots(graph, stations.count)
+// CollectPlots(graph:stations.count)
+// (dataParts, config) -> ComputeStats -> stats -> PlotGraphs -> graph:stations.count -> CollectPlots
