@@ -32,8 +32,8 @@ process CollectPlots(graph): Unit {
   collectGraphs(graph)
 }
 
-// xml = XmlData("data.xml")
-// config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+xml = XmlData("data.xml")
+config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
 
 // // processes are first-order citizens (like functions in functional languages)
 // p = ReadDataSets
