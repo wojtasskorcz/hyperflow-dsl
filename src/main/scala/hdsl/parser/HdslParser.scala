@@ -20,9 +20,11 @@ object HdslParser extends JavaTokenParsers {
 
   def processArgs: Parser[Any] = repsep(processArg, ",")
 
-  def processArg: Parser[Any] = argWithModifier | arg
+  def processArg: Parser[Any] = argWithModifier | arg | argWithImplicitType
 
   def argWithModifier: Parser[Any] = ident ~ ":" ~ ident ~ ident
+
+  def argWithImplicitType: Parser[Any] = ident ^^ {case name => (name, "Signal")}
   
   def comment: Parser[String] = "//.*".r
 

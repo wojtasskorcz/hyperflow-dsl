@@ -18,19 +18,19 @@ process ComputeStats(d: DataParts, c: sticky Config) {
   computeStats(d, c)
 }
 
-// // same as with 'ComputeStats' - leaving argument type undeclared…
-// // … implicitly sets it to Signal
-// process PlotGraphs(stats) {
-//   parlevel = 3
-//   plotData(stats)
-// }
+// same as with 'ComputeStats' - leaving argument type undeclared…
+// … implicitly sets it to Signal
+process PlotGraphs(stats) {
+  parlevel = 3
+  plotData(stats)
+}
 
-// // like in Scala, returning Unit means, that no usable value is returned
-// // process CollectPlots(graph, cnt: CountSignal): Unit {
-// //  graph.count = cnt
-// process CollectPlots(graph): Unit {
-//   collectGraphs(graph)
-// }
+// like in Scala, returning Unit means, that no usable value is returned
+// process CollectPlots(graph, cnt: CountSignal): Unit {
+//  graph.count = cnt
+process CollectPlots(graph): Unit {
+  collectGraphs(graph)
+}
 
 // xml = XmlData("data.xml")
 // config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
