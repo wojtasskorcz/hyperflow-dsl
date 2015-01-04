@@ -8,7 +8,9 @@ import hdsl.test.UnitSpec
 class HdslParserUnitTest extends UnitSpec {
 
   test("Comet workflow should be accepted by the parser") {
-    assert(HdslParser.parseAll(HdslParser.workflow, new InputStreamReader(getClass.getResourceAsStream("/comet.hdsl"))).successful)
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow, new InputStreamReader(getClass.getResourceAsStream("/comet.hdsl")))
+    println(parsingResult)
+    assert(parsingResult.successful)
   }
 
 }

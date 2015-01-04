@@ -3,20 +3,20 @@ signal Config(xpath: String, start_time: String, end_time: String, baseTemp: Str
 signal Stations()
 signal DataParts()
 
-// process ReadDataSets(x: XmlData, c: sticky Config): Stations {
-//   genXmlCollection(x, c)
-// }
+process ReadDataSets(x: XmlData, c: sticky Config): Stations {
+  genXmlCollection(x, c)
+}
 
-// process PartitionData(s: Stations): DataParts {
-//   partitionData(s)
-// }
+process PartitionData(s: Stations): DataParts {
+  partitionData(s)
+}
 
-// // when not declaring a return type, a generic Signal type is returned
-// // something like Object type in Java
-// process ComputeStats(d: DataParts, c: sticky Config) {
-//   parlevel = 3
-//   computeStats(d, c)
-// }
+// when not declaring a return type, a generic Signal type is returned
+// something like Object type in Java
+process ComputeStats(d: DataParts, c: sticky Config) {
+  parlevel = 3
+  computeStats(d, c)
+}
 
 // // same as with 'ComputeStats' - leaving argument type undeclared…
 // // … implicitly sets it to Signal
