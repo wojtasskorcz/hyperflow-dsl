@@ -34,9 +34,13 @@ object HdslParser extends JavaTokenParsers {
 
   def tupledAssignee: Parser[Any] = "(" ~ rep1sep(singleAssignee, ",") ~ ")"
 
-  def expr: Parser[Any] = signalInstantiation
+  def expr: Parser[Any] = signalInstantiation | processInstantiation | atomicValue
 
   def signalInstantiation: Parser[Any] = ident ~ "(" ~ repsep(stringLiteral, ",") ~ ")"
+
+  def processInstantiation = ident
+
+  def atomicValue = "true" | "false" | stringLiteral
   
   def comment: Parser[String] = "//.*".r
 
