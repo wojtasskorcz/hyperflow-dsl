@@ -8,7 +8,7 @@ object HdslParser extends JavaTokenParsers {
   
   def workflow: Parser[Any] = rep(workflowElem)
 
-  def workflowElem: Parser[Any] = signal | process | assignment | comment
+  def workflowElem: Parser[Any] = signal | process | assignment | composition | comment
   
   def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> args <~ ")") ^^ {case name ~ args => new Signal(name, args)}
 
@@ -41,6 +41,10 @@ object HdslParser extends JavaTokenParsers {
   def processInstantiation = ident
 
   def atomicValue = "true" | "false" | stringLiteral
+
+  def composition = compositionElem ~ "->" ~ rep1sep(compositionElem, "->")
+
+  def compositionElem = ident ~ ":" ~ singleAssignee | ident | "(" ~ rep1sep(ident, ",") ~ ")"
   
   def comment: Parser[String] = "//.*".r
 
