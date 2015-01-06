@@ -1,6 +1,6 @@
 package hdsl.parser
 
-import hdsl.parser.structures.Signal
+import hdsl.parser.structures.{Arg, Signal}
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
@@ -10,17 +10,17 @@ object HdslParser extends JavaTokenParsers {
 
   def workflowElem: Parser[Any] = signal | process | assignment | composition | comment
   
-  def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> args <~ ")") ^^ {case name ~ args => new Signal(name, args)}
+  def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> typedArgs <~ ")") ^^ {case name ~ args => new Signal(name, args)}
 
-  def args: Parser[Map[String, String]] = repsep(arg, ",") ^^ (Map() ++ _)
+  def typedArgs: Parser[List[Arg]] = repsep(typedArg, ",") ^^ (List() ++ _)
 
-  def arg: Parser[(String, String)] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => (name, argType)}
+  def typedArg: Parser[Arg] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
 
   def process: Parser[Any] = "process" ~ ident ~ "(" ~ processArgs ~ ")" ~ opt(":" ~ ident) ~ "{" ~ "[^}]*".r ~ "}"
 
   def processArgs: Parser[Any] = repsep(processArg, ",")
 
-  def processArg: Parser[Any] = argWithModifier | arg | argWithImplicitType
+  def processArg: Parser[Any] = argWithModifier | typedArg | argWithImplicitType
 
   def argWithModifier: Parser[Any] = ident ~ ":" ~ ident ~ ident
 
