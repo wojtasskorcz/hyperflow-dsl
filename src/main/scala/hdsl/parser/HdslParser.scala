@@ -1,6 +1,6 @@
 package hdsl.parser
 
-import hdsl.parser.structures.{Process, Arg, Signal}
+import hdsl.parser.structures._
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
@@ -16,9 +16,9 @@ object HdslParser extends JavaTokenParsers {
 
   def typedArg: Parser[Arg] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
 
-  def process: Parser[Process] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) <~ "{" ~ "[^}]*".r ~ "}" ^^ {
-    case name ~ args ~ None => Process(name, args, null)
-    case name ~ args ~ Some(returnType) => Process(name, args, returnType)
+  def process: Parser[Any] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
+    case name ~ args ~ Some(returnType) ~ ((settings, invocation)) => Process(name, args, returnType, settings, invocation)
+    case name ~ args ~ None ~ ((settings, invocation)) => Process(name, args, "Signal", settings, invocation)
   }
 
   def processArgs: Parser[List[Arg]] = repsep(processArg, ",")
@@ -33,13 +33,25 @@ object HdslParser extends JavaTokenParsers {
 
   def argWithImplicitType: Parser[Arg] = ident ^^ {case name => Arg(name, "Signal", Nil)}
 
+  def processBody: Parser[(List[Assignment], FunctionInvocation)] = rep(processSettings) ~ functionInvocation ^^ {
+    case settings ~ invocation => (settings, invocation)
+  }
+
+  def processSettings: Parser[Assignment] = singleAssignee ~ "=" ~ atomicValue ^^ {
+    case assignee ~ "=" ~ expr => Assignment(List(assignee), expr)
+  }
+
+  def functionInvocation: Parser[FunctionInvocation] = ident ~ ("(" ~> repsep(ident, ",") <~ ")") ^^ {
+    case name ~ args => FunctionInvocation(name, args)
+  }
+
   def assignment: Parser[Any] = assignee ~ "=" ~ expr
 
   def assignee: Parser[Any] = singleAssignee | tupledAssignee
 
-  def singleAssignee: Parser[Any] = rep1sep(ident, ".")
+  def singleAssignee: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
 
-  def tupledAssignee: Parser[Any] = "(" ~ rep1sep(singleAssignee, ",") ~ ")"
+  def tupledAssignee: Parser[List[DotNotationAccessor]] = "(" ~> rep1sep(singleAssignee, ",") <~ ")"
 
   def expr: Parser[Any] = signalInstantiation | processInstantiation | atomicValue
 
@@ -47,12 +59,12 @@ object HdslParser extends JavaTokenParsers {
 
   def processInstantiation = ident
 
-  def atomicValue = "true" | "false" | stringLiteral
+  def atomicValue = "true" | "false" | stringLiteral | floatingPointNumber
 
   def composition = compositionElem ~ "->" ~ rep1sep(compositionElem, "->")
 
   def compositionElem = ident ~ ":" ~ singleAssignee | ident | "(" ~ rep1sep(ident, ",") ~ ")"
   
-  def comment: Parser[String] = "//.*".r
+  def comment: Parser[String] = "//.*".r ^^ {case _ => ""}
 
 }
