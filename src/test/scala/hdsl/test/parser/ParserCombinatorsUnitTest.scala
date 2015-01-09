@@ -6,7 +6,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
 
 import org.junit.Assert._
 
-class RegexUnitTest extends UnitSpec {
+class ParserCombinatorsUnitTest extends UnitSpec {
 
   test("That curly brackets content is parsed correctly") {
     val parser = new JavaTokenParsers {
