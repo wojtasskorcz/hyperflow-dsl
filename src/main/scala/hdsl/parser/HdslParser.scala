@@ -1,5 +1,7 @@
 package hdsl.parser
 
+import java.io.Serializable
+
 import hdsl.parser.structures._
 
 import scala.util.parsing.combinator.JavaTokenParsers
@@ -16,7 +18,7 @@ object HdslParser extends JavaTokenParsers {
 
   def typedArg: Parser[Arg] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
 
-  def process: Parser[Any] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
+  def process: Parser[Process] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
     case name ~ args ~ Some(returnType) ~ ((settings, invocation)) => Process(name, args, returnType, settings, invocation)
     case name ~ args ~ None ~ ((settings, invocation)) => Process(name, args, "Signal", settings, invocation)
   }
@@ -45,9 +47,11 @@ object HdslParser extends JavaTokenParsers {
     case name ~ args => FunctionInvocation(name, args)
   }
 
-  def assignment: Parser[Any] = assignee ~ "=" ~ expr
+  def assignment: Parser[Assignment] = assignee ~ "=" ~ expr ^^ {
+    case assignee ~ "=" ~ expr => Assignment(assignee, expr)
+  }
 
-  def assignee: Parser[Any] = singleAssignee | tupledAssignee
+  def assignee: Parser[List[DotNotationAccessor]] = singleAssignee ^^ {case assignee => List(assignee)} | tupledAssignee
 
   def singleAssignee: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
 
