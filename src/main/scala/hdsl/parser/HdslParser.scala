@@ -12,11 +12,13 @@ object HdslParser extends JavaTokenParsers {
 
   def workflowElem: Parser[WfElem] = signal | process | assignment | composition | comment
   
-  def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> typedArgs <~ ")") ^^ {case name ~ args => Signal(name, args)}
+  def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> signalArgs <~ ")") ^^ {case name ~ args => Signal(name, args)}
 
-  def typedArgs: Parser[List[Arg]] = repsep(typedArg, ",") ^^ (List() ++ _)
+  def signalArgs: Parser[List[Arg]] = repsep(signalArg, ",") ^^ (List() ++ _)
 
-  def typedArg: Parser[Arg] = ident ~ ":" ~ ident ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
+  def signalArg: Parser[Arg] = ident ~ ":" ~ signalArgType ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
+
+  def signalArgType: Parser[String] = "String"
 
   def process: Parser[Process] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
     case name ~ args ~ Some(returnType) ~ ((settings, invocation)) => Process(name, args, returnType, settings, invocation)
