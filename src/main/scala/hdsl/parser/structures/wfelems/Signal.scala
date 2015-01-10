@@ -1,6 +1,8 @@
-package hdsl.parser.structures
+package hdsl.parser.structures.wfelems
 
-case class Signal(name: String, args: List[Arg]) {
+import hdsl.parser.structures.Arg
+
+case class Signal(name: String, args: List[Arg]) extends AnyRef with WfElem {
 
   // Signals can't have arguments with modifiers
   require(args.forall(arg => arg.modifiers == Nil))

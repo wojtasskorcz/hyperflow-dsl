@@ -2,14 +2,15 @@ package hdsl.parser
 
 import hdsl.parser.structures._
 import hdsl.parser.structures.rhs.{Rhs, SignalInstantiation, ProcessInstantiation, Atomic}
+import hdsl.parser.structures.wfelems._
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
 object HdslParser extends JavaTokenParsers {
   
-  def workflow: Parser[Any] = rep(workflowElem)
+  def workflow: Parser[List[WfElem]] = rep(workflowElem) ^^ {case elems => elems filterNot(elem => elem == null)}
 
-  def workflowElem: Parser[Any] = signal | process | assignment | composition | comment
+  def workflowElem: Parser[WfElem] = signal | process | assignment | composition | comment
   
   def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> typedArgs <~ ")") ^^ {case name ~ args => Signal(name, args)}
 
@@ -69,10 +70,16 @@ object HdslParser extends JavaTokenParsers {
     stringLiteral ^^ {case str => Atomic(str)} |
     floatingPointNumber ^^ {case num => Atomic(num)}
 
-  def composition = compositionElem ~ "->" ~ rep1sep(compositionElem, "->")
+  def composition: Parser[Composition] = compositionElem ~ "->" ~ rep1sep(compositionElem, "->") ^^ {
+    case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)
+  }
 
-  def compositionElem = ident ~ opt(":" ~ singleLhs) | "(" ~ rep1sep(ident, ",") ~ ")"
+  def compositionElem: Parser[CompositionElem] = ident ~ opt(":" ~> singleLhs) ^^ {
+    case name ~ Some(additional) => CompositionElem(List(name), additional)
+    case name ~ None => CompositionElem(List(name), null)
+  } |
+    "(" ~> rep1sep(ident, ",") <~ ")" ^^ {case names => CompositionElem(names, null)}
   
-  def comment: Parser[String] = "//.*".r ^^ {case _ => ""}
+  def comment: Parser[WfElem] = "//.*".r ^^ {case _ => null}
 
 }
