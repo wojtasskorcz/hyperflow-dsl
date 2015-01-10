@@ -1,8 +1,7 @@
 package hdsl.parser
 
-import java.io.Serializable
-
 import hdsl.parser.structures._
+import hdsl.parser.structures.rhs.{Rhs, SignalInstantiation, ProcessInstantiation, Atomic}
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
@@ -39,35 +38,40 @@ object HdslParser extends JavaTokenParsers {
     case settings ~ invocation => (settings, invocation)
   }
 
-  def processSettings: Parser[Assignment] = singleAssignee ~ "=" ~ atomicValue ^^ {
-    case assignee ~ "=" ~ expr => Assignment(List(assignee), expr)
+  def processSettings: Parser[Assignment] = singleLhs ~ "=" ~ atomicValue ^^ {
+    case assignee ~ "=" ~ value => Assignment(List(assignee), value)
   }
 
   def functionInvocation: Parser[FunctionInvocation] = ident ~ ("(" ~> repsep(ident, ",") <~ ")") ^^ {
     case name ~ args => FunctionInvocation(name, args)
   }
 
-  def assignment: Parser[Assignment] = assignee ~ "=" ~ expr ^^ {
-    case assignee ~ "=" ~ expr => Assignment(assignee, expr)
+  def assignment: Parser[Assignment] = lhs ~ "=" ~ rhs ^^ {
+    case lhs ~ "=" ~ rhs => Assignment(lhs, rhs)
   }
 
-  def assignee: Parser[List[DotNotationAccessor]] = singleAssignee ^^ {case assignee => List(assignee)} | tupledAssignee
+  def lhs: Parser[List[DotNotationAccessor]] = singleLhs ^^ {case assignee => List(assignee)} | tupledLhs
 
-  def singleAssignee: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
+  def singleLhs: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
 
-  def tupledAssignee: Parser[List[DotNotationAccessor]] = "(" ~> rep1sep(singleAssignee, ",") <~ ")"
+  def tupledLhs: Parser[List[DotNotationAccessor]] = "(" ~> rep1sep(singleLhs, ",") <~ ")"
 
-  def expr: Parser[Any] = signalInstantiation | processInstantiation | atomicValue
+  def rhs: Parser[Rhs] = signalInstantiation | processInstantiation | atomicValue
 
-  def signalInstantiation: Parser[Any] = ident ~ "(" ~ repsep(stringLiteral, ",") ~ ")"
+  def signalInstantiation: Parser[Rhs] = ident ~ ("(" ~> repsep(atomicValue, ",") <~ ")") ^^ {
+    case name ~ args => SignalInstantiation(name, args)
+  }
 
-  def processInstantiation = ident
+  def processInstantiation: Parser[Rhs] = ident ^^ {case name => ProcessInstantiation(name)}
 
-  def atomicValue = "true" | "false" | stringLiteral | floatingPointNumber
+  def atomicValue: Parser[Rhs] = "true" ^^ {case _ => Atomic(true)} |
+    "false" ^^ {case _ => Atomic(false)} |
+    stringLiteral ^^ {case str => Atomic(str)} |
+    floatingPointNumber ^^ {case num => Atomic(num)}
 
   def composition = compositionElem ~ "->" ~ rep1sep(compositionElem, "->")
 
-  def compositionElem = ident ~ ":" ~ singleAssignee | ident | "(" ~ rep1sep(ident, ",") ~ ")"
+  def compositionElem = ident ~ opt(":" ~ singleLhs) | "(" ~ rep1sep(ident, ",") ~ ")"
   
   def comment: Parser[String] = "//.*".r ^^ {case _ => ""}
 
