@@ -1,9 +1,9 @@
 package hdsl.compiler
 
 import hdsl.compiler.structures.SignalInstance
-import hdsl.parser.structures.{Arg, DotNotationAccessor}
-import hdsl.parser.structures.rhs.{Atomic, SignalInstantiation}
-import hdsl.parser.structures.wfelems.{Assignment, SignalClass, WfElem}
+import hdsl.parser.structures.DotNotationAccessor
+import hdsl.parser.structures.rhs.SignalInstantiation
+import hdsl.parser.structures.wfelems.{Assignment, SignalClass, WfElem, Process}
 
 object HdslCompiler {
 
@@ -17,16 +17,16 @@ object HdslCompiler {
   }
 
   def prepareDataStructures(wfElems: List[WfElem]) = {
-    val signalClasses: Map[String, SignalClass] = wfElems.collect({case elem: SignalClass => elem.name -> elem}).toMap
-    var signalInstances = prepareExplicitSignalInstances(wfElems, signalClasses)
-    println (signalInstances)
-  }
+    var signalClasses = Map[String, SignalClass]()
+    var processClasses = Map[String, Process]()
+    var signalInstances = Map[String, SignalInstance]()
 
-  def prepareExplicitSignalInstances(wfElems: List[WfElem], signalClasses: Map[String, SignalClass]): Map[String, SignalInstance] = {
-    val signals = wfElems.collect({
-      case Assignment(lhs, rhs: SignalInstantiation)  => prepareExplicitSignalInstance(lhs, rhs, signalClasses)
-    }).toMap
-    signals
+    wfElems.foreach({
+      case signalClass: SignalClass => signalClasses += signalClass.name -> signalClass
+      case processClass: Process => processClasses += processClass.name -> processClass
+      case Assignment(lhs, rhs: SignalInstantiation) => signalInstances += prepareExplicitSignalInstance(lhs, rhs, signalClasses)
+      case _ => "unimplemented"
+    })
   }
 
   def prepareExplicitSignalInstance(lhs: List[DotNotationAccessor], instantiation: SignalInstantiation,
