@@ -10,15 +10,17 @@ object HdslParser extends JavaTokenParsers {
   
   def workflow: Parser[List[WfElem]] = rep(workflowElem) ^^ {case elems => elems filterNot(elem => elem == null)}
 
-  def workflowElem: Parser[WfElem] = signal | process | assignment | composition | comment
+  def workflowElem: Parser[WfElem] = signalClass | process | assignment | composition | comment
   
-  def signal: Parser[Signal] = "signal" ~> ident ~ ("(" ~> signalArgs <~ ")") ^^ {case name ~ args => Signal(name, args)}
+  def signalClass: Parser[SignalClass] = "signal" ~> ident ~ ("(" ~> signalClassArgs <~ ")") ^^ {
+    case name ~ args => SignalClass(name, args)
+  }
 
-  def signalArgs: Parser[List[Arg]] = repsep(signalArg, ",") ^^ (List() ++ _)
+  def signalClassArgs: Parser[List[Arg]] = repsep(signalClassArg, ",") ^^ (List() ++ _)
 
-  def signalArg: Parser[Arg] = ident ~ ":" ~ signalArgType ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
+  def signalClassArg: Parser[Arg] = ident ~ ":" ~ signalClassArgType ^^ {case name ~ ":" ~ argType => Arg(name, argType, Nil)}
 
-  def signalArgType: Parser[String] = "String"
+  def signalClassArgType: Parser[String] = "String"
 
   def process: Parser[Process] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
     case name ~ args ~ Some(returnType) ~ ((settings, invocation)) => Process(name, args, returnType, settings, invocation)
@@ -61,16 +63,16 @@ object HdslParser extends JavaTokenParsers {
 
   def rhs: Parser[Rhs] = signalInstantiation | processInstantiation | atomicValue
 
-  def signalInstantiation: Parser[Rhs] = ident ~ ("(" ~> repsep(atomicValue, ",") <~ ")") ^^ {
+  def signalInstantiation: Parser[SignalInstantiation] = ident ~ ("(" ~> repsep(atomicValue, ",") <~ ")") ^^ {
     case name ~ args => SignalInstantiation(name, args)
   }
 
-  def processInstantiation: Parser[Rhs] = ident ^^ {case name => ProcessInstantiation(name)}
+  def processInstantiation: Parser[ProcessInstantiation] = ident ^^ {case name => ProcessInstantiation(name)}
 
-  def atomicValue: Parser[Rhs] = "true" ^^ {case _ => Atomic(true)} |
+  def atomicValue: Parser[Atomic] = "true" ^^ {case _ => Atomic(true)} |
     "false" ^^ {case _ => Atomic(false)} |
     stringLiteral ^^ {case str => Atomic(str)} |
-    floatingPointNumber ^^ {case num => Atomic(num)}
+    floatingPointNumber ^^ {case num => Atomic(num.toDouble)}
 
   def composition: Parser[Composition] = compositionElem ~ "->" ~ rep1sep(compositionElem, "->") ^^ {
     case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)

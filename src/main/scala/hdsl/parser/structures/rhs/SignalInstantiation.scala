@@ -1,5 +1,5 @@
 package hdsl.parser.structures.rhs
 
-case class SignalInstantiation(name: String, args: List[Any]) extends AnyRef with Rhs {
+case class SignalInstantiation(className: String, args: List[Atomic]) extends AnyRef with Rhs {
 
 }

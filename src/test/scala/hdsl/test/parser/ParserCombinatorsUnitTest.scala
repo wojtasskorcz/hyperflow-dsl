@@ -14,7 +14,8 @@ class ParserCombinatorsUnitTest extends UnitSpec {
     }
     val emptyBrackets = "{}"
     val oneLineBrackets =
-      """{
+      """
+        |{
         |some text
         |}
       """.stripMargin
