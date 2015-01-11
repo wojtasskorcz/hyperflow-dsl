@@ -4,6 +4,7 @@ import hdsl.compiler.structures.SignalInstance
 import hdsl.parser.structures.DotNotationAccessor
 import hdsl.parser.structures.rhs.SignalInstantiation
 import hdsl.parser.structures.wfelems.{Assignment, SignalClass, WfElem, ProcessClass}
+import hdsl.implicits.MyImplicits._
 
 object HdslCompiler {
 
@@ -22,8 +23,8 @@ object HdslCompiler {
     var signalInstances = Map[String, SignalInstance]()
 
     wfElems.foreach({
-      case signalClass: SignalClass => signalClasses += signalClass.name -> signalClass
-      case processClass: ProcessClass => processClasses += processClass.name -> processClass
+      case signalClass: SignalClass => signalClasses +!= signalClass.name -> signalClass
+      case processClass: ProcessClass => processClasses +!= processClass.name -> processClass
       case Assignment(lhs, rhs: SignalInstantiation) => signalInstances += prepareExplicitSignalInstance(lhs, rhs, signalClasses)
       case _ => "unimplemented"
     })

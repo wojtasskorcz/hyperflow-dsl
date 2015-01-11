@@ -56,4 +56,18 @@ class SignalCompilationUnitTest extends UnitSpec {
     HdslCompiler.compile(parsingResult.get)
   }
 
+  test("That multiple declarations of the same SignalClass cause exception") {
+    val wf =
+      """
+        |signal XmlData(path: String)
+        |signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
+        |signal XmlData(path: String)
+      """.stripMargin
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
+    assert(parsingResult.successful)
+    intercept[RuntimeException] {
+      HdslCompiler.compile(parsingResult.get)
+    }
+  }
+
 }
