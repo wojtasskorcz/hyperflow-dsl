@@ -1,5 +1,5 @@
 package hdsl.parser.structures.rhs
 
-case class ProcessInstantiation(name: String) extends AnyRef with Rhs {
+case class ProcessInstantiation(className: String) extends AnyRef with Rhs {
 
 }

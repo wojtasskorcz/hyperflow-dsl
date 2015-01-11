@@ -10,7 +10,7 @@ object HdslParser extends JavaTokenParsers {
   
   def workflow: Parser[List[WfElem]] = rep(workflowElem) ^^ {case elems => elems filterNot(elem => elem == null)}
 
-  def workflowElem: Parser[WfElem] = signalClass | process | assignment | composition | comment
+  def workflowElem: Parser[WfElem] = signalClass | processClass | assignment | composition | comment
   
   def signalClass: Parser[SignalClass] = "signal" ~> ident ~ ("(" ~> signalClassArgs <~ ")") ^^ {
     case name ~ args => SignalClass(name, args)
@@ -22,14 +22,15 @@ object HdslParser extends JavaTokenParsers {
 
   def signalClassArgType: Parser[String] = "String"
 
-  def process: Parser[Process] = "process" ~> ident ~ ("(" ~> processArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
-    case name ~ args ~ Some(returnType) ~ ((settings, invocation)) => Process(name, args, returnType, settings, invocation)
-    case name ~ args ~ None ~ ((settings, invocation)) => Process(name, args, "Signal", settings, invocation)
+  def processClass: Parser[ProcessClass] =
+    "process" ~> ident ~ ("(" ~> processClassArgs <~ ")") ~ opt(":" ~> ident) ~ ("{" ~> processBody <~ "}") ^^ {
+    case name ~ args ~ Some(returnType) ~ ((settings, invocation)) => ProcessClass(name, args, returnType, settings, invocation)
+    case name ~ args ~ None ~ ((settings, invocation)) => ProcessClass(name, args, "Signal", settings, invocation)
   }
 
-  def processArgs: Parser[List[Arg]] = repsep(processArg, ",")
+  def processClassArgs: Parser[List[Arg]] = repsep(processClassArg, ",")
 
-  def processArg: Parser[Arg] = argWithModifiers | argWithImplicitType
+  def processClassArg: Parser[Arg] = argWithModifiers | argWithImplicitType
 
   def argWithModifiers: Parser[Arg] = ident ~ ":" ~ rep(modifier) ~ ident ^^ {
     case name ~ ":" ~ modifiers ~ argType => Arg(name, argType, modifiers)
