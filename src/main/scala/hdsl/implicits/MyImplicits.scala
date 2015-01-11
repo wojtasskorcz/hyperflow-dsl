@@ -1,12 +1,14 @@
 package hdsl.implicits
 
+import hdsl.MutableMap
+
 object MyImplicits {
 
-  implicit class UniqueMap[K, V](map: Map[K, V]) {
+  implicit class UniqueMutableMap[K, V](map: MutableMap[K, V]) {
 
-    def +!(keyValue: (K, V)): Map[K, V] = keyValue match {
+    def putUnique(keyValue: (K, V)): Unit = keyValue match {
       case (key, value) => map.contains(key) match {
-        case false => map + keyValue
+        case false => map += keyValue
         case true => throw new RuntimeException(s"Declaration of $key is not unique")
       }
     }
