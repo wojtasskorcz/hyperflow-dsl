@@ -9,5 +9,6 @@ settings(
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.3"
 libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
 libraryDependencies += "junit" % "junit" % "4.12" % "test"
+libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:reflectiveCalls")

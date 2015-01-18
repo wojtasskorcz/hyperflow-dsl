@@ -11,7 +11,7 @@ class HdslParserUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream("/comet.hdsl")))
     assert(parsingResult.successful)
-    HdslCompiler.compile(parsingResult.get)
+    new HdslCompiler().compile(parsingResult.get)
   }
 
 }

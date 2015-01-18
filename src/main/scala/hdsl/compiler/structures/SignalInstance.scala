@@ -6,7 +6,9 @@ import hdsl.parser.structures.wfelems.SignalClass
 
 case class SignalInstance(name: String, signalClass: SignalClass, instantiation: SignalInstantiation) {
 
-  def checkArgsCompatibility(): Unit = {
+  checkArgsCompatibility()
+
+  def checkArgsCompatibility() = {
     signalClass.args.zipAll(instantiation.args, null, null).foreach({
       case (null, _) => throw new RuntimeException(
         s"Cannot instantiate signal $name. Too many arguments for class ${signalClass.name}")
@@ -18,5 +20,4 @@ case class SignalInstance(name: String, signalClass: SignalClass, instantiation:
     })
   }
 
-  checkArgsCompatibility()
 }

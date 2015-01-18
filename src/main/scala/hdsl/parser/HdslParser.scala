@@ -62,7 +62,7 @@ object HdslParser extends JavaTokenParsers {
 
   def tupledLhs: Parser[List[DotNotationAccessor]] = "(" ~> rep1sep(singleLhs, ",") <~ ")"
 
-  def rhs: Parser[Rhs] = signalInstantiation | processInstantiation | atomicValue
+  def rhs: Parser[Rhs] = signalInstantiation | atomicValue | processInstantiation
 
   def signalInstantiation: Parser[SignalInstantiation] = ident ~ ("(" ~> repsep(atomicValue, ",") <~ ")") ^^ {
     case name ~ args => SignalInstantiation(name, args)
