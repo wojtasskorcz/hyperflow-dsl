@@ -16,17 +16,12 @@ class HdslCompiler {
   val signalInstances = mutable.Map.empty[String, SignalInstance]
   val processInstances = mutable.Map.empty[String, ProcessInstance]
 
-  def compile(wfElems: List[WfElem]): Map[String, Any] = {
+  def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
     prepareDataStructures(wfElems)
-    var wf = Map[String, Any]()
-//    val signalDeclarations = wfElems.collect({case elem: Signal => elem.name -> elem}).toMap
-//    val signalInstances = compileSignals(wfElems)
-//    wf += "signals" -> compileSignals(wfElems)
-    wf
+    return generateOutput()
   }
 
   def prepareDataStructures(wfElems: List[WfElem]) = {
-
     wfElems.foreach({
       case signalClass: SignalClass => putUnique(signalClasses, signalClass.name -> signalClass)
       case processClass: ProcessClass => putUnique(processClasses, processClass.name -> processClass)
@@ -87,6 +82,12 @@ class HdslCompiler {
       case None => throw new RuntimeException(
           s"cannot set property ${accessor.getProperties()} as ${accessor.getBase()} is not defined")
     }
+  }
+
+  def generateOutput(): MutableMap[String, Any] = {
+    val outMap = mutable.Map.empty[String, Any]
+    outMap += "processes" -> processInstances.values.map(instance => instance.toMap)
+    outMap
   }
 
 }

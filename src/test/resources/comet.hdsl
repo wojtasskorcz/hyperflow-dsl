@@ -4,6 +4,8 @@ signal Stations()
 signal DataParts()
 
 process ReadDataSets(x: XmlData, c: sticky Config): Stations {
+  config.args = "someArgs"
+  config.constantArgs = "constantArgs"
   genXmlCollection(x, c)
 }
 
@@ -39,6 +41,8 @@ config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E
 p = ReadDataSets
 p.ordering = true
 p.config.args = ""
+
+q = PlotGraphs
 
 // type of 'stations' is inferred from the return value of 'ReadDataSets'
 // 'p' should be invoked only once, as each process instance has only one…
