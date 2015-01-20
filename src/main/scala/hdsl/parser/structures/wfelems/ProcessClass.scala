@@ -11,7 +11,7 @@ case class ProcessClass(name: String, args: List[Arg], returnType: String, setti
 
   def settingsMap: MutableMap[String, Any] = {
     val outMap = mutable.Map.empty[String, Any]
-    settings.foreach(assignment => recursivelySetProperty(assignment.lhs(0).parts, assignment.rhs.asInstanceOf[Atomic], outMap))
+    settings.foreach(assignment => recursivelySetProperty(assignment.lhs.parts, assignment.rhs.asInstanceOf[Atomic], outMap))
     outMap
   }
 

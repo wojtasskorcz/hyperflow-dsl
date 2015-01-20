@@ -29,7 +29,7 @@ class HdslCompiler {
         putUnique(signalInstances, prepareExplicitSignalInstance(lhs, rhs))
       case Assignment(lhs, rhs: ProcessInstantiation) =>
         putUnique(processInstances, prepareExplicitProcessInstance(lhs, rhs))
-      case Assignment(lhs, rhs: Atomic) => setProperty(lhs, rhs)
+      case Assignment(lhs, rhs: Atomic) => setProcessProperty(lhs, rhs)
       case _ => "unimplemented"
     })
   }
@@ -43,9 +43,9 @@ class HdslCompiler {
     map += elem
   }
 
-  def prepareExplicitSignalInstance(lhs: List[DotNotationAccessor], instantiation: SignalInstantiation): (String, SignalInstance) = {
+  def prepareExplicitSignalInstance(lhs: DotNotationAccessor, instantiation: SignalInstantiation): (String, SignalInstance) = {
     val signalInstanceName = lhs match {
-      case List(DotNotationAccessor(List(name: String))) => name
+      case DotNotationAccessor(List(name: String)) => name
       case x => throw new RuntimeException(s"A signal instance cannot be assigned to $x")
     }
     val signalClass = signalClasses.get(instantiation.className) match {
@@ -56,9 +56,9 @@ class HdslCompiler {
     (signalInstanceName, SignalInstance(signalInstanceName, signalClass, instantiation))
   }
 
-  def prepareExplicitProcessInstance(lhs: List[DotNotationAccessor], instantiation: ProcessInstantiation): (String, ProcessInstance) = {
+  def prepareExplicitProcessInstance(lhs: DotNotationAccessor, instantiation: ProcessInstantiation): (String, ProcessInstance) = {
     val processInstanceName = lhs match {
-      case List(DotNotationAccessor(List(name: String))) => name
+      case DotNotationAccessor(List(name: String)) => name
       case x => throw new RuntimeException(s"A process instance cannot be assigned to $x")
     }
     val processClass = processClasses.get(instantiation.className) match {
@@ -67,13 +67,6 @@ class HdslCompiler {
         s"Cannot instantiate process $processInstanceName. Process class ${instantiation.className} not found")
     }
     (processInstanceName, ProcessInstance(processInstanceName, processClass, instantiation, mutable.Map.empty[String, Any]))
-  }
-
-  def setProperty(lhs: List[DotNotationAccessor], rhs: Atomic) = {
-    lhs match {
-      case List(accessor) => setProcessProperty(accessor, rhs)
-      case List(_) => throw new NotImplementedError("Handling tupled assignments not yet implemented")
-    }
   }
 
   def setProcessProperty(accessor: DotNotationAccessor, rhs: Atomic) = {

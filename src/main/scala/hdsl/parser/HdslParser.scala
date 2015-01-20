@@ -44,8 +44,8 @@ object HdslParser extends JavaTokenParsers {
     case settings ~ invocation => (settings, invocation)
   }
 
-  def processSettings: Parser[Assignment] = singleLhs ~ "=" ~ atomicValue ^^ {
-    case assignee ~ "=" ~ value => Assignment(List(assignee), value)
+  def processSettings: Parser[Assignment] = lhs ~ "=" ~ atomicValue ^^ {
+    case assignee ~ "=" ~ value => Assignment(assignee, value)
   }
 
   def functionInvocation: Parser[FunctionInvocation] = ident ~ ("(" ~> repsep(ident, ",") <~ ")") ^^ {
@@ -56,11 +56,7 @@ object HdslParser extends JavaTokenParsers {
     case lhs ~ "=" ~ rhs => Assignment(lhs, rhs)
   }
 
-  def lhs: Parser[List[DotNotationAccessor]] = singleLhs ^^ {case assignee => List(assignee)} | tupledLhs
-
-  def singleLhs: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
-
-  def tupledLhs: Parser[List[DotNotationAccessor]] = "(" ~> rep1sep(singleLhs, ",") <~ ")"
+  def lhs: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
 
   def rhs: Parser[Rhs] = signalInstantiation | atomicValue | processInstantiation
 
@@ -79,7 +75,7 @@ object HdslParser extends JavaTokenParsers {
     case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)
   }
 
-  def compositionElem: Parser[CompositionElem] = ident ~ opt(":" ~> singleLhs) ^^ {
+  def compositionElem: Parser[CompositionElem] = ident ~ opt(":" ~> lhs) ^^ {
     case name ~ Some(additional) => CompositionElem(List(name), additional)
     case name ~ None => CompositionElem(List(name), null)
   } |
