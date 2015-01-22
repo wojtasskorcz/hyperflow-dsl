@@ -6,16 +6,9 @@ import hdsl.parser.structures.{Arg, FunctionInvocation}
 
 import scala.collection.mutable
 
-case class ProcessClass(name: String, args: List[Arg], returnType: String, settings: List[Assignment],
-                   invocation: FunctionInvocation) extends WfElem {
+case class ProcessClass(name: String, args: List[Arg], returnType: String, invocation: FunctionInvocation) extends WfElem {
 
   val properties = mutable.Map.empty[String, Any]
-
-  def settingsMap: MutableMap[String, Any] = {
-    val outMap = mutable.Map.empty[String, Any]
-    settings.foreach(assignment => recursivelySetProperty(assignment.lhs.parts, assignment.rhs.asInstanceOf[Atomic], outMap))
-    outMap
-  }
 
   def setProperty(path: List[String], rhs: Atomic) = {
     recursivelySetProperty(path, rhs, properties)
