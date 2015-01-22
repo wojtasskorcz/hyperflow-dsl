@@ -18,7 +18,7 @@ class HdslCompiler {
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
     prepareDataStructures(wfElems)
-    return generateOutput()
+    generateOutput()
   }
 
   def prepareDataStructures(wfElems: List[WfElem]) = {
@@ -71,7 +71,7 @@ class HdslCompiler {
 
   def setProcessProperty(accessor: DotNotationAccessor, rhs: Atomic) = {
     processInstances.get(accessor.getBase()) match {
-      case Some(signalInstance) => signalInstance.setProperty(accessor.getProperties(), rhs)
+      case Some(processInstance) => processInstance.setProperty(accessor.getProperties(), rhs)
       case None => throw new RuntimeException(
           s"cannot set property ${accessor.getProperties()} as ${accessor.getBase()} is not defined")
     }

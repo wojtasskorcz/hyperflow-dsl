@@ -34,7 +34,7 @@ case class ProcessInstance(name: String, processClass: ProcessClass, instantiati
     val outMap = mutable.Map.empty[String, Any]
     outMap += "name" -> name
     outMap += "function" -> processClass.invocation.name
-    outMap ++= processClass.settingsMap
+    outMap ++= processClass.resolvedPropertiesMap
     outMap
   }
 
