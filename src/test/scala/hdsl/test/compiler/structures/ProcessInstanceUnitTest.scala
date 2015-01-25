@@ -1,6 +1,5 @@
 package hdsl.test.compiler.structures
 
-import hdsl.MutableMap
 import hdsl.compiler.structures.ProcessInstance
 import hdsl.parser.structures.rhs.Atomic
 import hdsl.test.UnitSpec
@@ -11,13 +10,9 @@ import scala.collection.mutable
 class ProcessInstanceUnitTest extends UnitSpec {
 
   test("That setting properties works properly") {
-    val initialProperties = mutable.Map(
-      "lvl1" -> mutable.Map(
-        "end2" -> 2,
-        "lvl2" -> mutable.Map(
-          "end3" -> 3)))
-
-    val instance = ProcessInstance(null, null, null, initialProperties.asInstanceOf[MutableMap[String, Any]])
+    val instance = ProcessInstance(null, null, null)
+    instance.setProperty(List("lvl1", "end2"), Atomic(2))
+    instance.setProperty(List("lvl1", "lvl2", "end3"), Atomic(3))
     instance.setProperty(List("end1"), Atomic(1))
     instance.setProperty(List("lvl1", "end2.1"), Atomic(4))
     instance.setProperty(List("lvl1", "lvl2", "end3.1"), Atomic(5))
@@ -34,7 +29,7 @@ class ProcessInstanceUnitTest extends UnitSpec {
         "lvl2.1" -> mutable.Map(
           "end3.2" -> 6)))
 
-    assertEquals(finalProperties, instance.properties)
+    assertEquals(finalProperties, instance.resolvedPropertiesMap)
   }
 
 }

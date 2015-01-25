@@ -66,7 +66,7 @@ class HdslCompiler {
       case None => throw new RuntimeException(
         s"Cannot instantiate process $processInstanceName. Process class ${instantiation.className} not found")
     }
-    (processInstanceName, ProcessInstance(processInstanceName, processClass, instantiation, mutable.Map.empty[String, Any]))
+    (processInstanceName, ProcessInstance(processInstanceName, processClass, instantiation))
   }
 
   def setProcessProperty(accessor: DotNotationAccessor, rhs: Atomic) = {
