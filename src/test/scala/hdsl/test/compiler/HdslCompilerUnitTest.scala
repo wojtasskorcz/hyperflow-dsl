@@ -29,6 +29,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     } yield process)(0))
     assertEquals("genXmlCollection", (p \ "function").values)
     assertEquals("constantArgs", (p \ "config" \ "constantArgs").values)
+    assertEquals("", (p \ "config" \ "args").values)
   }
 
 }

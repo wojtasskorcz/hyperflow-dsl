@@ -9,11 +9,13 @@ import scala.collection.mutable
 
 case class ProcessInstance(name: String, processClass: ProcessClass, instantiation: ProcessInstantiation) extends PropertyContainer {
 
+  addAllProperties(processClass)
+
   def toMap: MutableMap[String, Any] = {
     val outMap = mutable.Map.empty[String, Any]
     outMap += "name" -> name
     outMap += "function" -> processClass.invocation.name
-    outMap ++= processClass.resolvedPropertiesMap
+    outMap ++= resolvedPropertiesMap()
     outMap
   }
 
