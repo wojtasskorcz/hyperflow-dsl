@@ -80,6 +80,7 @@ class HdslCompiler {
   def generateOutput(): MutableMap[String, Any] = {
     val outMap = mutable.Map.empty[String, Any]
     outMap += "processes" -> processInstances.values.map(instance => instance.toMap)
+    outMap += "signals" -> signalInstances.values.map(instance => instance.toMap)
     outMap
   }
 

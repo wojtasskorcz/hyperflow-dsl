@@ -12,9 +12,7 @@ case class ProcessInstance(name: String, processClass: ProcessClass, instantiati
   addAllProperties(processClass)
 
   def toMap: MutableMap[String, Any] = {
-    val outMap = mutable.Map.empty[String, Any]
-    outMap += "name" -> name
-    outMap += "function" -> processClass.invocation.name
+    val outMap = mutable.Map[String, Any]("name" -> name, "function" -> processClass.invocation.name)
     outMap ++= resolvedPropertiesMap()
     outMap
   }

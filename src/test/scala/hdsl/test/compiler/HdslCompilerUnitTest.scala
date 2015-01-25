@@ -30,6 +30,14 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals("genXmlCollection", (p \ "function").values)
     assertEquals("constantArgs", (p \ "config" \ "constantArgs").values)
     assertEquals("", (p \ "config" \ "args").values)
+
+    val xmlData = new JObject((for {
+      JObject(signal) <- json \ "signals"
+      JField("name", JString("config")) <- signal
+    } yield signal)(0))
+
+    assertEquals("//Collection[@label='station']", ((xmlData \ "data")(0) \ "xpath").values)
+    assertEquals("1.196499599E9", ((xmlData \ "data")(0) \ "start_time").values)
   }
 
 }
