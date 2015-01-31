@@ -32,6 +32,8 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(true, (p \ "ordering").values)
     assertEquals("constantArgs", (p \ "config" \ "constantArgs").values)
     assertEquals("", (p \ "config" \ "args").values)
+    assertEquals("xml", (p \ "ins")(0).values)
+    assertEquals("config", (p \ "ins")(1).values)
 
     val xmlData = new JObject((for {
       JObject(signal) <- json \ "signals"

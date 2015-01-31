@@ -1,8 +1,8 @@
 package hdsl.compiler
 
 import hdsl.MutableMap
-import hdsl.compiler.structures.{WfSpec, ProcessInstance, SignalInstance}
-import hdsl.parser.structures.{CompositionElem, DotNotationAccessor}
+import hdsl.compiler.structures.{ProcessInstance, SignalInstance, WfSpec}
+import hdsl.parser.structures.DotNotationAccessor
 import hdsl.parser.structures.rhs.{Atomic, ProcessInstantiation, SignalInstantiation}
 import hdsl.parser.structures.wfelems._
 
@@ -26,7 +26,7 @@ class HdslCompiler {
       case Assignment(lhs, rhs: ProcessInstantiation) =>
         wf.putProcessInstance(prepareExplicitProcessInstance(lhs, rhs))
       case Assignment(lhs, rhs: Atomic) => setProcessProperty(lhs, rhs)
-//      case c: Composition => compose(c, visibleSignalInstances, visibleProcessInstances)
+      case c: Composition => c.compose(wf)
       case _ => "unimplemented"
     })
   }
@@ -62,13 +62,6 @@ class HdslCompiler {
       case Some(processInstance) => processInstance.setProperty(accessor.getProperties(), rhs)
       case None => throw new RuntimeException(
           s"cannot set property ${accessor.getProperties()} as ${accessor.getBase()} is not defined")
-    }
-  }
-
-  private def compose(c: Composition, signalInstances: MutableMap[String, SignalInstance],
-                      processInstances: MutableMap[String, ProcessInstance]) = {
-    c.elems foreach {
-      case CompositionElem(List(name), null) =>
     }
   }
 
