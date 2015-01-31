@@ -27,6 +27,7 @@ class HdslCompilerUnitTest extends UnitSpec {
       JObject(process) <- json \ "processes"
       JField("name", JString("p")) <- process
     } yield process)(0))
+
     assertEquals("genXmlCollection", (p \ "function").values)
     assertEquals(true, (p \ "ordering").values)
     assertEquals("constantArgs", (p \ "config" \ "constantArgs").values)

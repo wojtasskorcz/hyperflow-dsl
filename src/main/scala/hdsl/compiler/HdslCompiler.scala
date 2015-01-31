@@ -1,54 +1,42 @@
 package hdsl.compiler
 
 import hdsl.MutableMap
-import hdsl.compiler.structures.{ProcessInstance, SignalInstance}
-import hdsl.parser.structures.DotNotationAccessor
+import hdsl.compiler.structures.{WfSpec, ProcessInstance, SignalInstance}
+import hdsl.parser.structures.{CompositionElem, DotNotationAccessor}
 import hdsl.parser.structures.rhs.{Atomic, ProcessInstantiation, SignalInstantiation}
-import hdsl.parser.structures.wfelems.{Assignment, ProcessClass, SignalClass, WfElem}
+import hdsl.parser.structures.wfelems._
 
 import scala.collection.mutable
 
 class HdslCompiler {
 
-  val usedIdentifiers = mutable.Set.empty[String]
-  val signalClasses = mutable.Map.empty[String, SignalClass]
-  val processClasses = mutable.Map.empty[String, ProcessClass]
-  val signalInstances = mutable.Map.empty[String, SignalInstance]
-  val processInstances = mutable.Map.empty[String, ProcessInstance]
+  val wf = new WfSpec()
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
     prepareDataStructures(wfElems)
     generateOutput()
   }
 
-  def prepareDataStructures(wfElems: List[WfElem]) = {
+  private def prepareDataStructures(wfElems: List[WfElem]) = {
     wfElems.foreach({
-      case signalClass: SignalClass => putUnique(signalClasses, signalClass.name -> signalClass)
-      case processClass: ProcessClass => putUnique(processClasses, processClass.name -> processClass)
+      case signalClass: SignalClass => wf.putSignalClass(signalClass.name -> signalClass)
+      case processClass: ProcessClass => wf.putProcessClass(processClass.name -> processClass)
       case Assignment(lhs, rhs: SignalInstantiation) =>
-        putUnique(signalInstances, prepareExplicitSignalInstance(lhs, rhs))
+        wf.putSignalInstance(prepareExplicitSignalInstance(lhs, rhs))
       case Assignment(lhs, rhs: ProcessInstantiation) =>
-        putUnique(processInstances, prepareExplicitProcessInstance(lhs, rhs))
+        wf.putProcessInstance(prepareExplicitProcessInstance(lhs, rhs))
       case Assignment(lhs, rhs: Atomic) => setProcessProperty(lhs, rhs)
+//      case c: Composition => compose(c, visibleSignalInstances, visibleProcessInstances)
       case _ => "unimplemented"
     })
   }
 
-  def putUnique[V](map: MutableMap[String, V], elem: (String, V)) = {
-    val key = elem._1
-    if (usedIdentifiers.contains(key)) {
-      throw new RuntimeException(s"Declaration of $key is not unique")
-    }
-    usedIdentifiers += key
-    map += elem
-  }
-
-  def prepareExplicitSignalInstance(lhs: DotNotationAccessor, instantiation: SignalInstantiation): (String, SignalInstance) = {
+  private def prepareExplicitSignalInstance(lhs: DotNotationAccessor, instantiation: SignalInstantiation): (String, SignalInstance) = {
     val signalInstanceName = lhs match {
       case DotNotationAccessor(List(name: String)) => name
       case x => throw new RuntimeException(s"A signal instance cannot be assigned to $x")
     }
-    val signalClass = signalClasses.get(instantiation.className) match {
+    val signalClass = wf.signalClasses.get(instantiation.className) match {
       case Some(signalClass: SignalClass) => signalClass
       case None => throw new RuntimeException(
         s"Cannot instantiate signal $signalInstanceName. Signal class ${instantiation.className} not found")
@@ -56,12 +44,12 @@ class HdslCompiler {
     (signalInstanceName, SignalInstance(signalInstanceName, signalClass, instantiation))
   }
 
-  def prepareExplicitProcessInstance(lhs: DotNotationAccessor, instantiation: ProcessInstantiation): (String, ProcessInstance) = {
+  private def prepareExplicitProcessInstance(lhs: DotNotationAccessor, instantiation: ProcessInstantiation): (String, ProcessInstance) = {
     val processInstanceName = lhs match {
       case DotNotationAccessor(List(name: String)) => name
       case x => throw new RuntimeException(s"A process instance cannot be assigned to $x")
     }
-    val processClass = processClasses.get(instantiation.className) match {
+    val processClass = wf.processClasses.get(instantiation.className) match {
       case Some(processClass: ProcessClass) => processClass
       case None => throw new RuntimeException(
         s"Cannot instantiate process $processInstanceName. Process class ${instantiation.className} not found")
@@ -69,18 +57,25 @@ class HdslCompiler {
     (processInstanceName, ProcessInstance(processInstanceName, processClass, instantiation))
   }
 
-  def setProcessProperty(accessor: DotNotationAccessor, rhs: Atomic) = {
-    processInstances.get(accessor.getBase()) match {
+  private def setProcessProperty(accessor: DotNotationAccessor, rhs: Atomic) = {
+    wf.visibleProcessInstances.get(accessor.getBase()) match {
       case Some(processInstance) => processInstance.setProperty(accessor.getProperties(), rhs)
       case None => throw new RuntimeException(
           s"cannot set property ${accessor.getProperties()} as ${accessor.getBase()} is not defined")
     }
   }
 
-  def generateOutput(): MutableMap[String, Any] = {
+  private def compose(c: Composition, signalInstances: MutableMap[String, SignalInstance],
+                      processInstances: MutableMap[String, ProcessInstance]) = {
+    c.elems foreach {
+      case CompositionElem(List(name), null) =>
+    }
+  }
+
+  private def generateOutput(): MutableMap[String, Any] = {
     val outMap = mutable.Map.empty[String, Any]
-    outMap += "processes" -> processInstances.values.map(instance => instance.toMap)
-    outMap += "signals" -> signalInstances.values.map(instance => instance.toMap)
+    outMap += "processes" -> wf.allProcessInstances.map(instance => instance.toMap)
+    outMap += "signals" -> wf.allSignalInstances.map(instance => instance.toMap)
     outMap
   }
 

@@ -42,8 +42,6 @@ p = ReadDataSets
 p.ordering = true
 p.config.args = ""
 
-q = PlotGraphs
-
 // type of 'stations' is inferred from the return value of 'ReadDataSets'
 // 'p' should be invoked only once, as each process instance has only one…
 // …set of inputs and outputs; invoking it again will cause compilation error
