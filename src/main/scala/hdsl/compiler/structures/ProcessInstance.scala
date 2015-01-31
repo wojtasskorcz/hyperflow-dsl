@@ -3,7 +3,7 @@ package hdsl.compiler.structures
 import hdsl._
 import hdsl.parser.structures.rhs.{Atomic, ProcessInstantiation}
 import hdsl.parser.structures.traits.PropertyContainer
-import hdsl.parser.structures.wfelems.ProcessClass
+import hdsl.parser.structures.wfelems.{SignalClass, ProcessClass}
 
 import scala.collection.mutable
 
@@ -18,6 +18,7 @@ case class ProcessInstance(name: String, processClass: ProcessClass, instantiati
     val outMap = mutable.Map[String, Any]("name" -> name, "function" -> processClass.invocation.name)
     outMap ++= resolvedPropertiesMap()
     outMap += "ins" -> ins
+    outMap += "outs" -> outs
     outMap
   }
 
@@ -30,5 +31,17 @@ case class ProcessInstance(name: String, processClass: ProcessClass, instantiati
     }
     ins += signal.name
   }
+
+  def addOutput(signal: SignalInstance) = {
+    if (outs.nonEmpty) {
+      throw new RuntimeException(s"Cannot add another output signal ${signal.name} to process $name")
+    }
+    if (processClass.returnType == "Unit") {
+      throw new RuntimeException(s"Cannot add output signal ${signal.name} to process $name that returns 'Unit'")
+    }
+    outs += signal.name
+  }
+
+  def getOutSignalClass: SignalClass = Wf.signalClasses(processClass.returnType)
 
 }

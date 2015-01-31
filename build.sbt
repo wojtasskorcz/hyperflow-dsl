@@ -13,3 +13,5 @@ libraryDependencies += "org.mockito" % "mockito-all" % "1.10.19" % "test"
 libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.11"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:reflectiveCalls")
+
+parallelExecution in Test := false

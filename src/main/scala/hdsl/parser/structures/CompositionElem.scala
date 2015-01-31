@@ -1,11 +1,11 @@
 package hdsl.parser.structures
 
-import hdsl.compiler.structures.WfSpec
+import hdsl.compiler.structures.Wf
 
 case class CompositionElem(names: List[String], additional: DotNotationAccessor) {
 
-  def isSignalElem(wf: WfSpec) = {
-    names.forall(name => wf.visibleSignalInstances.contains(name))
+  def isSignalElem() = {
+    names.forall(name => Wf.visibleSignalInstances.contains(name))
 //    if (names.forall(name => wf.visibleSignalInstances.contains(name))) {
 //      true
 //    } else if (names.forall(name => wf.visibleProcessInstances.contains(name))) {
@@ -15,8 +15,8 @@ case class CompositionElem(names: List[String], additional: DotNotationAccessor)
 //    }
   }
 
-  def isProcessElem(wf: WfSpec) = {
-    names.forall(name => wf.visibleProcessInstances.contains(name))
+  def isProcessElem() = {
+    names.forall(name => Wf.visibleProcessInstances.contains(name))
   }
 
 }

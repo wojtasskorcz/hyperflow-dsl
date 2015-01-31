@@ -1,10 +1,10 @@
 package hdsl.compiler.structures
 
-import hdsl.parser.structures.wfelems.{Composition, ProcessClass, SignalClass}
+import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
 
 import scala.collection.mutable
 
-class WfSpec {
+object Wf {
 
   val signalClasses = mutable.Map.empty[String, SignalClass]
   val processClasses = mutable.Map.empty[String, ProcessClass]
@@ -12,8 +12,17 @@ class WfSpec {
   val visibleProcessInstances = mutable.Map.empty[String, ProcessInstance]
   val allSignalInstances = mutable.MutableList.empty[SignalInstance]
   val allProcessInstances = mutable.MutableList.empty[ProcessInstance]
-  val compositions = mutable.Map.empty[String, Composition]
   private var anonymousElemCounter = 1
+
+  def init() = {
+    signalClasses.clear()
+    processClasses.clear()
+    visibleSignalInstances.clear()
+    visibleProcessInstances.clear()
+    allSignalInstances.clear()
+    allProcessInstances.clear()
+    anonymousElemCounter = 1
+  }
 
   def putSignalClass(elem: (String, SignalClass)) = {
     checkNameAvailability(elem._1)
