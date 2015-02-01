@@ -16,7 +16,7 @@ class HdslCompilerUnitTest extends UnitSpec {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  test("That the workflow is properly compiled") {
+  test("That Comet workflow is properly compiled") {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream("/comet.hdsl")))
     assert(parsingResult.successful)
@@ -69,6 +69,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     } yield process)(0))
 
     assertEquals(List("stats"), (plotGraphs \ "ins").values)
+    assertEquals(List("graph"), (plotGraphs \ "outs").values)
   }
 
 }

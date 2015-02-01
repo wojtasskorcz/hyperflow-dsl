@@ -1,7 +1,7 @@
 package hdsl.parser.structures.wfelems
 
 import hdsl.compiler.structures.{Wf, SignalInstance, ProcessInstance}
-import hdsl.parser.structures.CompositionElem
+import hdsl.parser.structures.{DotNotationAccessor, CompositionElem}
 import hdsl.parser.structures.rhs.{ProcessInstantiation, SignalInstantiation}
 
 import scala.collection.mutable
@@ -50,6 +50,10 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     
     signalElem match {
       case CompositionElem(signalNames, null) => signalNames.foreach {
+        case signalName if Wf.visibleSignalInstances.contains(signalName) => throw new RuntimeException("TODO")
+        case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
+      }
+      case CompositionElem(List(signalName), DotNotationAccessor(List(processName, "count"))) => signalName match {
         case signalName if Wf.visibleSignalInstances.contains(signalName) => throw new RuntimeException("TODO")
         case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
       }
