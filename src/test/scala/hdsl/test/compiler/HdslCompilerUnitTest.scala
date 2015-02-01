@@ -47,20 +47,28 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(List("xml", "config"), (p \ "ins").values)
     assertEquals(List("stations"), (p \ "outs").values)
 
-    val anonymousPartitionData = new JObject((for {
+    val partitionData = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("function", JString("partitionData")) <- process
     } yield process)(0))
 
-    assertEquals(List("stations"), (anonymousPartitionData \ "ins").values)
-    assertEquals(List("dataParts"), (anonymousPartitionData \ "outs").values)
+    assertEquals(List("stations"), (partitionData \ "ins").values)
+    assertEquals(List("dataParts"), (partitionData \ "outs").values)
 
-    val anonymousComputeStats = new JObject((for {
+    val computeStats = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("function", JString("computeStats")) <- process
     } yield process)(0))
 
-    assertEquals(List("dataParts", "config"), (anonymousComputeStats \ "ins").values)
+    assertEquals(List("dataParts", "config"), (computeStats \ "ins").values)
+    assertEquals(List("stats"), (computeStats \ "outs").values)
+
+    val plotGraphs = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("plotData")) <- process
+    } yield process)(0))
+
+    assertEquals(List("stats"), (plotGraphs \ "ins").values)
   }
 
 }
