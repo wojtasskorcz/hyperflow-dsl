@@ -36,6 +36,13 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals("config", (p \ "ins")(1).values)
     assertEquals("stations", (p \ "outs")(0).values)
 
+    val anonymousPartitionData = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("partitionData")) <- process
+    } yield process)(0))
+
+    assertEquals("stations", (anonymousPartitionData \ "ins")(0).values)
+
     val xmlData = new JObject((for {
       JObject(signal) <- json \ "signals"
       JField("name", JString("config")) <- signal
@@ -44,5 +51,5 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals("//Collection[@label='station']", ((xmlData \ "data")(0) \ "xpath").values)
     assertEquals("1.196499599E9", ((xmlData \ "data")(0) \ "start_time").values)
   }
-  
+
 }

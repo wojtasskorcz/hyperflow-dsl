@@ -50,8 +50,8 @@ p.config.args = ""
 
 // invoking a process inline automatically creates a new instance of it
 // dataParts = PartitionData(stations)
-(xml, config) -> p -> stations
-// -> PartitionData -> dataParts
+(xml, config) -> p -> stations -> PartitionData
+// -> dataParts
 
 // stats = ComputeStats(dataParts, config)
 // graph = PlotGraphs(stats)

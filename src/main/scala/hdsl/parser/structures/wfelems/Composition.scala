@@ -2,7 +2,7 @@ package hdsl.parser.structures.wfelems
 
 import hdsl.compiler.structures.{Wf, SignalInstance, ProcessInstance}
 import hdsl.parser.structures.CompositionElem
-import hdsl.parser.structures.rhs.SignalInstantiation
+import hdsl.parser.structures.rhs.{ProcessInstantiation, SignalInstantiation}
 
 import scala.collection.mutable
 
@@ -20,12 +20,20 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
   }
 
   private def setInputs(processElem: CompositionElem, signalElem: CompositionElem) = {
-    processElem match {
-      case CompositionElem(List(processName), null) => signalElem match {
-        case CompositionElem(signalNames, null) => signalNames.foreach(
-          signalName => Wf.visibleProcessInstances(processName).addInput(Wf.visibleSignalInstances(signalName))
-        )
+    val processInstance = processElem match {
+      case CompositionElem(List(processName), null) => Wf.visibleProcessInstances.get(processName) match {
+        case Some(instance) => instance
+        case None => Wf.processClasses.get(processName) match {
+          case Some(processClass) => createAnonymousProcess(processClass)
+          case None => throw new RuntimeException(s"Could not find process instance nor process class named $processName")
+        }
       }
+    }
+
+    signalElem match {
+      case CompositionElem(signalNames, null) => signalNames.foreach(
+        signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName))
+      )
     }
   }
 
@@ -43,6 +51,13 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
         case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
       }
     }
+  }
+
+  private def createAnonymousProcess(processClass: ProcessClass): ProcessInstance = {
+    val processInstance = ProcessInstance(Wf.getNextAnonymousName, processClass, ProcessInstantiation(processClass.name))
+    tmpProcesses += processClass.name -> processInstance
+    Wf.allProcessInstances += processInstance
+    processInstance
   }
 
   private def createOutputSignal(signalName: String, processInstance: ProcessInstance): SignalInstance = {
