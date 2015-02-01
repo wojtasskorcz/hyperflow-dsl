@@ -23,6 +23,18 @@ class HdslCompilerUnitTest extends UnitSpec {
     val outMap = new HdslCompiler().compile(parsingResult.get)
     val json = parse(write(outMap))
 
+    // signals test
+
+    val xmlData = new JObject((for {
+      JObject(signal) <- json \ "signals"
+      JField("name", JString("config")) <- signal
+    } yield signal)(0))
+
+    assertEquals("//Collection[@label='station']", ((xmlData \ "data")(0) \ "xpath").values)
+    assertEquals("1.196499599E9", ((xmlData \ "data")(0) \ "start_time").values)
+
+    // processes test
+
     val p = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("name", JString("p")) <- process
@@ -32,25 +44,23 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(true, (p \ "ordering").values)
     assertEquals("constantArgs", (p \ "config" \ "constantArgs").values)
     assertEquals("", (p \ "config" \ "args").values)
-    assertEquals("xml", (p \ "ins")(0).values)
-    assertEquals("config", (p \ "ins")(1).values)
-    assertEquals("stations", (p \ "outs")(0).values)
+    assertEquals(List("xml", "config"), (p \ "ins").values)
+    assertEquals(List("stations"), (p \ "outs").values)
 
     val anonymousPartitionData = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("function", JString("partitionData")) <- process
     } yield process)(0))
 
-    assertEquals("stations", (anonymousPartitionData \ "ins")(0).values)
-    assertEquals("dataParts", (anonymousPartitionData \ "outs")(0).values)
+    assertEquals(List("stations"), (anonymousPartitionData \ "ins").values)
+    assertEquals(List("dataParts"), (anonymousPartitionData \ "outs").values)
 
-    val xmlData = new JObject((for {
-      JObject(signal) <- json \ "signals"
-      JField("name", JString("config")) <- signal
-    } yield signal)(0))
+    val anonymousComputeStats = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("computeStats")) <- process
+    } yield process)(0))
 
-    assertEquals("//Collection[@label='station']", ((xmlData \ "data")(0) \ "xpath").values)
-    assertEquals("1.196499599E9", ((xmlData \ "data")(0) \ "start_time").values)
+    assertEquals(List("dataParts", "config"), (anonymousComputeStats \ "ins").values)
   }
 
 }
