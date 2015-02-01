@@ -70,6 +70,14 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     assertEquals(List("stats"), (plotGraphs \ "ins").values)
     assertEquals(List("graph"), (plotGraphs \ "outs").values)
+
+    val collectPlots = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("collectGraphs")) <- process
+    } yield process)(0))
+
+    assertEquals(List("graph"), (collectPlots \ "ins").values)
+    assertEquals(Nil, (collectPlots \ "outs").values)
   }
 
 }

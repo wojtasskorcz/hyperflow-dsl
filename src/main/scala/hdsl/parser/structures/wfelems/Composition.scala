@@ -34,6 +34,8 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
       case CompositionElem(signalNames, null) => signalNames.foreach(
         signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName))
       )
+      case CompositionElem(List(signalName), DotNotationAccessor(List(processName, "count"))) =>
+        processInstance.addInput(Wf.visibleSignalInstances(signalName))
     }
   }
 
@@ -49,11 +51,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     }
     
     signalElem match {
-      case CompositionElem(signalNames, null) => signalNames.foreach {
-        case signalName if Wf.visibleSignalInstances.contains(signalName) => throw new RuntimeException("TODO")
-        case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
-      }
-      case CompositionElem(List(signalName), DotNotationAccessor(List(processName, "count"))) => signalName match {
+      case CompositionElem(signalNames, _) => signalNames.foreach {
         case signalName if Wf.visibleSignalInstances.contains(signalName) => throw new RuntimeException("TODO")
         case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
       }
