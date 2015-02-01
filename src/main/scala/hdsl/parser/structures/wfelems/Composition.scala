@@ -13,9 +13,9 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
   def compose() = {
     // for each pair of adjacent composition elements
     elems zip elems.tail foreach {
-      case (from, to) if from.isSignalElem() || to.isProcessElem() => setInputs(to, from)
-      case (from, to) if from.isProcessElem() || to.isSignalElem() => setOutputs(from, to)
-      case _ => "unimplemented"
+      case (from, to) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
+      case (from, to) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to)
+      case _ => throw new RuntimeException("TODO")
     }
   }
 
@@ -41,13 +41,16 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     val processInstance = processElem match {
       case CompositionElem(List(processName), null) => Wf.visibleProcessInstances.get(processName) match {
         case Some(instance) => instance
-        case None => throw new RuntimeException() //wf.processClasses.get(processName) match and create inline if possible
+        case None => tmpProcesses.get(processName) match {
+          case Some(instance) => instance
+          case None => throw new RuntimeException(s"Could not find process $processName to set its output")
+        }
       }
     }
-
+    
     signalElem match {
       case CompositionElem(signalNames, null) => signalNames.foreach {
-        case signalName if Wf.visibleSignalInstances.contains(signalName) => "TODO"
+        case signalName if Wf.visibleSignalInstances.contains(signalName) => throw new RuntimeException("TODO")
         case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
       }
     }

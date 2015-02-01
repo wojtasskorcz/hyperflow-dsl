@@ -42,6 +42,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     } yield process)(0))
 
     assertEquals("stations", (anonymousPartitionData \ "ins")(0).values)
+    assertEquals("dataParts", (anonymousPartitionData \ "outs")(0).values)
 
     val xmlData = new JObject((for {
       JObject(signal) <- json \ "signals"

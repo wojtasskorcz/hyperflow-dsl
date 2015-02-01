@@ -50,8 +50,7 @@ p.config.args = ""
 
 // invoking a process inline automatically creates a new instance of it
 // dataParts = PartitionData(stations)
-(xml, config) -> p -> stations -> PartitionData
-// -> dataParts
+(xml, config) -> p -> stations -> PartitionData -> dataParts
 
 // stats = ComputeStats(dataParts, config)
 // graph = PlotGraphs(stats)
@@ -60,4 +59,4 @@ p.config.args = ""
 // … we can attach a count-output to the process that created this signal
 // CollectPlots(graph, stations.count)
 // CollectPlots(graph:stations.count)
-(dataParts, config) -> ComputeStats -> stats -> PlotGraphs -> graph:stations.count -> CollectPlots
+// (dataParts, config) -> ComputeStats -> stats -> PlotGraphs -> graph:stations.count -> CollectPlots
