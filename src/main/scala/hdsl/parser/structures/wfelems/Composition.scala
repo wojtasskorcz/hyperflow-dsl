@@ -34,8 +34,11 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
       case CompositionElem(signalNames, null) => signalNames.foreach(
         signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName))
       )
-      case CompositionElem(List(signalName), DotNotationAccessor(List(processName, "count"))) =>
-        processInstance.addInput(Wf.visibleSignalInstances(signalName))
+      case CompositionElem(List(signalName), DotNotationAccessor(List(countSourceSignalName, "count"))) => {
+        val countSignal = createCountSignal(countSourceSignalName)
+        processInstance.addInput(Wf.visibleSignalInstances(signalName), s":${countSignal.name}")
+      }
+
     }
   }
 
@@ -65,6 +68,15 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     processInstance
   }
 
+  private def createAnonymousSignal(signalClass: SignalClass): SignalInstance = {
+    if (signalClass.args != Nil) {
+      throw new RuntimeException(s"Could not create an anonymous singal of class ${signalClass.name}, as the signal takes arguments")
+    }
+    val signalInstance = SignalInstance(Wf.getNextAnonymousName, signalClass, SignalInstantiation(signalClass.name, Nil))
+    Wf.allSignalInstances += signalInstance
+    signalInstance
+  }
+
   private def createOutputSignal(signalName: String, processInstance: ProcessInstance): SignalInstance = {
     val signalClass = processInstance.getOutSignalClass
     if (signalClass.args.nonEmpty) {
@@ -72,6 +84,19 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     }
     val signalInstance = SignalInstance(signalName, signalClass, SignalInstantiation(signalClass.name, Nil))
     Wf.putSignalInstance(signalName -> signalInstance)
+    signalInstance
+  }
+
+  private def createCountSignal(countSourceSignalName: String): SignalInstance = {
+    val countSourceProcesses = Wf.allProcessInstances.filter(processInstance => processInstance.outs.contains(countSourceSignalName))
+    if (countSourceProcesses.length != 1) {
+      throw new RuntimeException(s"Could not uniquely find a process, which could be the source of count signal $countSourceSignalName. Number of processes found: ${countSourceProcesses.length}")
+    }
+    val countSourceProcess = countSourceProcesses(0)
+    val signalInstance = createAnonymousSignal(Wf.signalClasses("Signal"))
+    countSourceProcess.outs.transform(
+      outSignal => if(outSignal == countSourceSignalName) s"$outSignal:${signalInstance.name}" else outSignal
+    )
     signalInstance
   }
 

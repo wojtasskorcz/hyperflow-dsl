@@ -22,14 +22,14 @@ case class ProcessInstance(name: String, processClass: ProcessClass, instantiati
     outMap
   }
 
-  def addInput(signal: SignalInstance) = {
+  def addInput(signal: SignalInstance, suffix: String = "") = {
     if (ins.size == processClass.args.size) {
       throw new RuntimeException(s"Cannot add signal ${signal.name} as input to process ${name}. Too many inputs.")
     }
     if (signal.signalClass.name != processClass.args(ins.size).argType) {
       throw new RuntimeException(s"Input number ${ins.size} of process $name is of type ${processClass.args(ins.size).argType} cannot be set to signal ${signal.name} of class ${signal.signalClass.name}")
     }
-    ins += signal.name
+    ins += signal.name + suffix
   }
 
   def addOutput(signal: SignalInstance) = {
