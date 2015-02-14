@@ -21,7 +21,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
 
   private def setInputs(processElem: CompositionElem, signalElem: CompositionElem) = {
     val processInstance = processElem match {
-      case CompositionElem(List(processName), null) => Wf.visibleProcessInstances.get(processName) match {
+      case CompositionElem(List(processName), _, null) => Wf.visibleProcessInstances.get(processName) match {
         case Some(instance) => instance
         case None => Wf.processClasses.get(processName) match {
           case Some(processClass) => createAnonymousProcess(processClass)
@@ -31,10 +31,10 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     }
 
     signalElem match {
-      case CompositionElem(signalNames, null) => signalNames.foreach(
+      case CompositionElem(signalNames, _, null) => signalNames.foreach(
         signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName))
       )
-      case CompositionElem(List(signalName), DotNotationAccessor(List(countSourceSignalName, "count"))) => {
+      case CompositionElem(List(signalName), _, DotNotationAccessor(List(countSourceSignalName, "count"))) => {
         val countSignal = createCountSignal(countSourceSignalName)
         processInstance.addInput(Wf.visibleSignalInstances(signalName), s":${countSignal.name}")
       }
@@ -44,7 +44,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
 
   private def setOutputs(processElem: CompositionElem, signalElem: CompositionElem): Unit = {
     val processInstance = processElem match {
-      case CompositionElem(List(processName), null) => Wf.visibleProcessInstances.get(processName) match {
+      case CompositionElem(List(processName), _, null) => Wf.visibleProcessInstances.get(processName) match {
         case Some(instance) => instance
         case None => tmpProcesses.get(processName) match {
           case Some(instance) => instance
@@ -54,7 +54,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     }
     
     signalElem match {
-      case CompositionElem(signalNames, _) => signalNames.foreach {
+      case CompositionElem(signalNames, _, _) => signalNames.foreach {
         case signalName if Wf.visibleSignalInstances.contains(signalName) => throw new RuntimeException("TODO")
         case signalName => processInstance.addOutput(createOutputSignal(signalName, processInstance))
       }

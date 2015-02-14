@@ -43,7 +43,7 @@ for (p, idx <- pArr) {
   p.config.args = ""
 
   // w kazdym obiegu petli tworzony jest nowy proces PartitionData
-//  (xml, config) -> p -> stationsArr[idx] -> PartitionData -> dataPartsArr[idx]
+  (xml, config) -> p -> stationsArr[idx] -> PartitionData -> dataPartsArr[idx]
 
   // statsArr i graphArr są implicite definiowane jako tablice sygnałów, tak
   // … jak wcześniej implicite były definiowane sygnały stats i graph
