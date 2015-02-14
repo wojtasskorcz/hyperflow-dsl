@@ -1,7 +1,7 @@
 package hdsl.parser.structures.traits
 
 import hdsl._
-import hdsl.parser.structures.rhs.Atomic
+import hdsl.parser.structures.rhs.Expr
 
 import scala.collection.mutable
 
@@ -18,7 +18,7 @@ trait PropertyContainer {
     def recursivelySetProperty(path: List[String], rhs: Any, targetMap: MutableMap[String, Any]): Unit = {
       path match {
         case List(lastProperty) => rhs match {
-          case unresolvedValue: Atomic => targetMap.put(lastProperty, unresolvedValue.evaluate)
+          case unresolvedValue: Expr => targetMap.put(lastProperty, unresolvedValue.evaluate)
           case resolvedValue: Any => targetMap.put(lastProperty, resolvedValue)
         }
         case longerList => {

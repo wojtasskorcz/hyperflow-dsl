@@ -2,7 +2,7 @@ package hdsl.compiler.structures
 
 import hdsl.MutableMap
 import hdsl.parser.structures.Arg
-import hdsl.parser.structures.rhs.{Atomic, SignalInstantiation}
+import hdsl.parser.structures.rhs.{Expr, SignalInstantiation}
 import hdsl.parser.structures.wfelems.SignalClass
 
 import scala.collection.mutable
@@ -17,8 +17,8 @@ case class SignalInstance(name: String, signalClass: SignalClass, instantiation:
         s"Cannot instantiate signal $name. Too many arguments for class ${signalClass.name}")
       case (_, null) => throw new RuntimeException(
         s"Cannot instantiate signal $name. Too little arguments for class ${signalClass.name}")
-      case (Arg(_, "String", _), Atomic(s: String)) => "OK"
-      case (Arg(argName, argType, _), Atomic(value: Any)) => throw new RuntimeException(
+      case (Arg(_, "String", _), Expr(s: String)) => "OK"
+      case (Arg(argName, argType, _), Expr(value: Any)) => throw new RuntimeException(
         s"Cannot instantiate signal $name. $value cannot be passed to argument $argName of type $argType")
     })
   }

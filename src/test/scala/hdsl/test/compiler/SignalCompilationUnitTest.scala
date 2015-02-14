@@ -10,7 +10,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val wf =
       """
         |signal Config(xpath: String, start_time: String, end_time: String)
-        |config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+        |config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
       """.stripMargin
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
@@ -23,7 +23,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val wf =
       """
         |signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
-        |config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9")
+        |config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9")
       """.stripMargin
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
@@ -36,7 +36,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val wf =
       """
         |signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
-        |config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", 10)
+        |config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", 10)
       """.stripMargin
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
@@ -49,7 +49,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val wf =
       """
         |signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
-        |config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+        |config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
       """.stripMargin
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)

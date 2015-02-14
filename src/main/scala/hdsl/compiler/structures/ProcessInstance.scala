@@ -1,7 +1,7 @@
 package hdsl.compiler.structures
 
 import hdsl._
-import hdsl.parser.structures.rhs.{Atomic, ProcessInstantiation}
+import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation}
 import hdsl.parser.structures.traits.PropertyContainer
 import hdsl.parser.structures.wfelems.{SignalClass, ProcessClass}
 

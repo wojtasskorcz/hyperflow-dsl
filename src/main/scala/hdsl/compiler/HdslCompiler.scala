@@ -3,7 +3,7 @@ package hdsl.compiler
 import hdsl.MutableMap
 import hdsl.compiler.structures.{Wf, ProcessInstance, SignalInstance}
 import hdsl.parser.structures.DotNotationAccessor
-import hdsl.parser.structures.rhs.{Atomic, ProcessInstantiation, SignalInstantiation}
+import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation, SignalInstantiation}
 import hdsl.parser.structures.wfelems._
 
 import scala.collection.mutable
@@ -26,7 +26,7 @@ class HdslCompiler {
         Wf.putSignalInstance(prepareExplicitSignalInstance(lhs, rhs))
       case Assignment(lhs, rhs: ProcessInstantiation) =>
         Wf.putProcessInstance(prepareExplicitProcessInstance(lhs, rhs))
-      case Assignment(lhs, rhs: Atomic) => setProcessProperty(lhs, rhs)
+      case Assignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
       case c: Composition => c.compose()
       case _ => "unimplemented"
     })
@@ -58,7 +58,7 @@ class HdslCompiler {
     (processInstanceName, ProcessInstance(processInstanceName, processClass, instantiation))
   }
 
-  private def setProcessProperty(accessor: DotNotationAccessor, rhs: Atomic) = {
+  private def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
     Wf.visibleProcessInstances.get(accessor.getBase()) match {
       case Some(processInstance) => processInstance.setProperty(accessor.getProperties(), rhs)
       case None => throw new RuntimeException(
