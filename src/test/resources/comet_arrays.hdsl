@@ -1,0 +1,52 @@
+signal XmlData(path: String)
+signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
+signal Stations()
+signal DataParts()
+
+process ReadDataSets(x: XmlData, c: sticky Config): Stations {
+  config.args = "someArgs"
+  config.constantArgs = "constantArgs"
+  genXmlCollection(x, c)
+}
+
+process PartitionData(s: Stations): DataParts {
+  partitionData(s)
+}
+
+process ComputeStats(d: DataParts, c: sticky Config) {
+  parlevel = 3
+  computeStats(d, c)
+}
+
+process PlotGraphs(stats) {
+  parlevel = 3
+  plotData(stats)
+}
+
+process CollectPlots(graph): Unit {
+  collectGraphs(graph)
+}
+
+xml = XmlData("data.xml")
+config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+
+// przez var oznaczamy zmienne nie będące sygnałami ani procesami
+var n = 10
+
+// deklaracje tablic procesów i sygnałów
+pArr = ReadDataSets[n]
+//stationsArr = Stations[n]
+//dataPartsArr = DataParts[n]
+
+//for (p, idx <- pArr) {
+//  p.ordering = true
+//  p.config.args = ""
+
+  // w kazdym obiegu petli tworzony jest nowy proces PartitionData
+//  (xml, config) -> p -> stationsArr[idx] -> PartitionData -> dataPartsArr[idx]
+
+  // statsArr i graphArr są implicite definiowane jako tablice sygnałów, tak
+  // … jak wcześniej implicite były definiowane sygnały stats i graph
+//  (dataPartsArr[idx], config) -> ComputeStats -> statsArr[idx] -> PlotGraphs
+//  -> graphArr[idx]:stationsArr[idx].count -> CollectPlots
+//}
