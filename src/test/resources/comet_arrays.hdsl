@@ -35,8 +35,8 @@ var n = 10
 
 // deklaracje tablic procesów i sygnałów
 pArr = new ReadDataSets[n]
-//stationsArr = new Stations()[n]
-//dataPartsArr = new DataParts()[n]
+stationsArr = new Stations()[n]
+dataPartsArr = new DataParts()[n]
 
 //for (p, idx <- pArr) {
 //  p.ordering = true

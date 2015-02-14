@@ -72,7 +72,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     if (signalClass.args != Nil) {
       throw new RuntimeException(s"Could not create an anonymous singal of class ${signalClass.name}, as the signal takes arguments")
     }
-    val signalInstance = SignalInstance(Wf.getNextAnonymousName, signalClass, SignalInstantiation(signalClass.name, Nil))
+    val signalInstance = SignalInstance(Wf.getNextAnonymousName, signalClass, SignalInstantiation(signalClass.name, Nil, null))
     Wf.allSignalInstances += signalInstance
     signalInstance
   }
@@ -82,7 +82,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     if (signalClass.args.nonEmpty) {
       throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} because the class takes arguments")
     }
-    val signalInstance = SignalInstance(signalName, signalClass, SignalInstantiation(signalClass.name, Nil))
+    val signalInstance = SignalInstance(signalName, signalClass, SignalInstantiation(signalClass.name, Nil, null))
     Wf.putSignalInstance(signalName -> signalInstance)
     signalInstance
   }
