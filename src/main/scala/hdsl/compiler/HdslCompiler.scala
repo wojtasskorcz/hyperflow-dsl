@@ -22,11 +22,11 @@ class HdslCompiler {
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
-      case Assignment(lhs, rhs: SignalInstantiation) =>
+      case WfElemAssignment(lhs, rhs: SignalInstantiation) =>
         Wf.putSignalInstance(prepareExplicitSignalInstance(lhs, rhs))
-      case Assignment(lhs, rhs: ProcessInstantiation) =>
+      case WfElemAssignment(lhs, rhs: ProcessInstantiation) =>
         Wf.putProcessInstance(prepareExplicitProcessInstance(lhs, rhs))
-      case Assignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
+      case WfElemAssignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
       case c: Composition => c.compose()
       case _ => "unimplemented"
     })

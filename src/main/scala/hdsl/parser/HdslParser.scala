@@ -44,21 +44,24 @@ object HdslParser extends JavaTokenParsers {
 
   def argWithImplicitType: Parser[Arg] = ident ^^ {case name => Arg(name, "Signal", Nil)}
 
-  def processBody: Parser[(List[Assignment], FunctionInvocation)] = rep(processSettings) ~ functionInvocation ^^ {
+  def processBody: Parser[(List[WfElemAssignment], FunctionInvocation)] = rep(processSettings) ~ functionInvocation ^^ {
     case settings ~ invocation => (settings, invocation)
   }
 
-  def processSettings: Parser[Assignment] = lhs ~ "=" ~ expr ^^ {
-    case assignee ~ "=" ~ value => Assignment(assignee, value)
+  def processSettings: Parser[WfElemAssignment] = lhs ~ "=" ~ expr ^^ {
+    case assignee ~ "=" ~ value => WfElemAssignment(assignee, value)
   }
 
   def functionInvocation: Parser[FunctionInvocation] = ident ~ ("(" ~> repsep(ident, ",") <~ ")") ^^ {
     case name ~ args => FunctionInvocation(name, args)
   }
 
-  def assignment: Parser[Assignment] = lhs ~ "=" ~ rhs ^^ {
-    case lhs ~ "=" ~ rhs => Assignment(lhs, rhs)
-  }
+  def assignment: Parser[Assignment] = "var" ~> ident ~ "=" ~ expr ^^ {
+        case varName ~ "=" ~ expr => VarAssignment(varName, expr)
+      } |
+      lhs ~ "=" ~ rhs ^^ {
+          case lhs ~ "=" ~ rhs => WfElemAssignment(lhs, rhs)
+    }
 
   def lhs: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ {case parts => DotNotationAccessor(parts)}
 
@@ -68,13 +71,18 @@ object HdslParser extends JavaTokenParsers {
     case name ~ args => SignalInstantiation(name, args)
   }
 
-  def processInstantiation: Parser[ProcessInstantiation] = "new" ~> ident ^^ {case name => ProcessInstantiation(name)}
+  def processInstantiation: Parser[ProcessInstantiation] = "new" ~> ident ~ opt(arrayAccessor) ^^ {
+    case name ~ Some(expr) => ProcessInstantiation(name, expr)
+    case name ~ None => ProcessInstantiation(name, null)
+  }
 
   def expr: Parser[Expr] = "true" ^^ {case _ => Expr(true)} |
     "false" ^^ {case _ => Expr(false)} |
     stringLiteral ^^ {case str => Expr(str)} |
     floatingPointNumber ^^ {case num => Expr(num.toDouble)} |
     ident ^^ {case varName => Expr(varName)}
+
+  def arrayAccessor: Parser[Expr] = "[" ~> expr <~ "]"
 
   def composition: Parser[Composition] = compositionElem ~ "->" ~ rep1sep(compositionElem, "->") ^^ {
     case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)

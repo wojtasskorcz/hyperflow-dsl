@@ -27,16 +27,16 @@ process CollectPlots(graph): Unit {
   collectGraphs(graph)
 }
 
-xml = XmlData("data.xml")
-config = Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+xml = new XmlData("data.xml")
+config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
 
 // przez var oznaczamy zmienne nie będące sygnałami ani procesami
 var n = 10
 
 // deklaracje tablic procesów i sygnałów
-pArr = ReadDataSets[n]
-//stationsArr = Stations[n]
-//dataPartsArr = DataParts[n]
+pArr = new ReadDataSets[n]
+//stationsArr = new Stations()[n]
+//dataPartsArr = new DataParts()[n]
 
 //for (p, idx <- pArr) {
 //  p.ordering = true
