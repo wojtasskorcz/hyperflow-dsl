@@ -28,7 +28,7 @@ class HdslCompiler {
         Wf.putProcessInstance(prepareExplicitProcessInstance(lhs, rhs))
       case WfElemAssignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
       case c: Composition => c.compose()
-      case _ => "unimplemented"
+      case _ => throw new RuntimeException("TODO")
     })
   }
 

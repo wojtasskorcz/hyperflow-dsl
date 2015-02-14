@@ -38,9 +38,9 @@ pArr = new ReadDataSets[n]
 stationsArr = new Stations()[n]
 dataPartsArr = new DataParts()[n]
 
-//for (p, idx <- pArr) {
-//  p.ordering = true
-//  p.config.args = ""
+for (p, idx <- pArr) {
+  p.ordering = true
+  p.config.args = ""
 
   // w kazdym obiegu petli tworzony jest nowy proces PartitionData
 //  (xml, config) -> p -> stationsArr[idx] -> PartitionData -> dataPartsArr[idx]
@@ -49,4 +49,4 @@ dataPartsArr = new DataParts()[n]
   // … jak wcześniej implicite były definiowane sygnały stats i graph
 //  (dataPartsArr[idx], config) -> ComputeStats -> statsArr[idx] -> PlotGraphs
 //  -> graphArr[idx]:stationsArr[idx].count -> CollectPlots
-//}
+}

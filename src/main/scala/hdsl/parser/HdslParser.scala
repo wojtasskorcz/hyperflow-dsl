@@ -8,7 +8,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
 
 object HdslParser extends JavaTokenParsers {
   
-  def workflow: Parser[List[WfElem]] = rep(workflowElem) ^^ {case elems => elems filterNot(elem => elem == null)}
+  def workflow: Parser[List[WfElem]] = rep(workflowElem | forLoop) ^^ {case elems => elems filterNot(elem => elem == null)}
 
   def workflowElem: Parser[WfElem] = signalClass | processClass | assignment | composition | comment
   
@@ -94,6 +94,11 @@ object HdslParser extends JavaTokenParsers {
     case name ~ None => CompositionElem(List(name), null)
   } |
     "(" ~> rep1sep(ident, ",") <~ ")" ^^ {case names => CompositionElem(names, null)}
+
+  def forLoop: Parser[ForLoop] = "for" ~> "(" ~> ident ~ opt("," ~> ident) ~ "<-" ~ ident ~ (")" ~> "{" ~> rep(workflowElem) <~ "}") ^^ {
+    case loopVar ~ Some(loopIdx) ~ "<-" ~ array ~ wfElems => ForLoop(loopVar, loopIdx, array, wfElems)
+    case loopVar ~ None ~ "<-" ~ array ~ wfElems => ForLoop(loopVar, null, array, wfElems)
+  }
   
   def comment: Parser[WfElem] = "//.*".r ^^ {case _ => null}
 
