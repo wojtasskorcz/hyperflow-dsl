@@ -47,6 +47,6 @@ for (p, idx <- pArr) {
 
   // statsArr i graphArr są implicite definiowane jako tablice sygnałów, tak
   // … jak wcześniej implicite były definiowane sygnały stats i graph
-//  (dataPartsArr[idx], config) -> ComputeStats -> statsArr[idx] -> PlotGraphs
-//  -> graphArr[idx]:stationsArr[idx].count -> CollectPlots
+  (dataPartsArr[idx], config) -> ComputeStats -> statsArr[idx] -> PlotGraphs
+  //-> graphArr[idx]:stationsArr[idx].count -> CollectPlots
 }
