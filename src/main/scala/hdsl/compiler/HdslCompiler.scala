@@ -37,12 +37,7 @@ class HdslCompiler {
       case DotNotationAccessor(List(name: String)) => name
       case x => throw new RuntimeException(s"A signal instance cannot be assigned to $x")
     }
-    val signalClass = Wf.signalClasses.get(instantiation.className) match {
-      case Some(signalClass: SignalClass) => signalClass
-      case None => throw new RuntimeException(
-        s"Cannot instantiate signal $signalInstanceName. Signal class ${instantiation.className} not found")
-    }
-    (signalInstanceName, SignalInstance(signalInstanceName, signalClass, instantiation))
+    (signalInstanceName, SignalInstance(signalInstanceName, instantiation))
   }
 
   private def prepareExplicitProcessInstance(lhs: DotNotationAccessor, instantiation: ProcessInstantiation): (String, ProcessInstance) = {

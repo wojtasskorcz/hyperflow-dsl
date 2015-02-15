@@ -3,11 +3,15 @@ package hdsl.compiler.structures
 import hdsl.MutableMap
 import hdsl.parser.structures.Arg
 import hdsl.parser.structures.rhs.{Expr, SignalInstantiation}
-import hdsl.parser.structures.wfelems.SignalClass
 
 import scala.collection.mutable
 
-case class SignalInstance(name: String, signalClass: SignalClass, instantiation: SignalInstantiation) {
+case class SignalInstance(name: String, instantiation: SignalInstantiation) {
+
+  final val signalClass = Wf.signalClasses.get(instantiation.className) match {
+    case Some(signalClass) => signalClass
+    case None => throw new RuntimeException(s"Cannot instantiate signal $name. Signal class ${instantiation.className} not found")
+  }
 
   checkArgsCompatibility()
 
