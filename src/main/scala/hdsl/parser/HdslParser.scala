@@ -89,12 +89,16 @@ object HdslParser extends JavaTokenParsers {
     case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)
   }
 
-  def compositionElem: Parser[CompositionElem] = ident ~ opt(arrayAccessor) ~ opt(":" ~> lhs) ^^ {
-    case name ~ idx ~ additional => CompositionElem(List(name), List(idx.orNull), additional.orNull)
+  def compositionElem: Parser[CompositionElem] = dotNotationPath ~ opt(":" ~> lhs) ^^ {
+    case primaryPath ~ additionalPath => CompositionElem(List(primaryPath), additionalPath.orNull)
   } |
-    "(" ~> rep1sep(ident ~ opt(arrayAccessor), ",") <~ ")" ^^ {
-      case tupledElems => CompositionElem(tupledElems.map(_._1), tupledElems.map(_._2.orNull), null)
+    "(" ~> rep1sep(dotNotationPath, ",") <~ ")" ^^ {
+      case primaryPaths => CompositionElem(primaryPaths, null)
     }
+
+  def dotNotationPath: Parser[DotNotationAccessor] = ident ~ rep("." ~> ident | arrayAccessor) ^^ {
+    case base ~ properties => DotNotationAccessor(base :: properties)
+  }
 
   def forLoop: Parser[ForLoop] = "for" ~> "(" ~> ident ~ opt("," ~> ident) ~ "<-" ~ ident ~ (")" ~> "{" ~> rep(workflowElem) <~ "}") ^^ {
     case loopVar ~ Some(loopIdx) ~ "<-" ~ array ~ wfElems => ForLoop(loopVar, loopIdx, array, wfElems)
