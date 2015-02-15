@@ -60,9 +60,9 @@ class HdslCompiler {
 
   private def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
     Wf.visibleProcessInstances.get(accessor.getBase()) match {
-      case Some(processInstance) => processInstance.setProperty(accessor.getProperties(), rhs)
+      case Some(processInstance) => processInstance.setProperty(accessor.getResolvedProperties(), rhs)
       case None => throw new RuntimeException(
-          s"cannot set property ${accessor.getProperties()} as ${accessor.getBase()} is not defined")
+          s"cannot set property ${accessor.getResolvedProperties()} as ${accessor.getBase()} is not defined")
     }
   }
 

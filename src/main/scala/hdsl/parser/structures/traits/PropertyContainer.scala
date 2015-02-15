@@ -13,7 +13,7 @@ trait PropertyContainer {
 
   def addAllProperties(sourceContainer: PropertyContainer) = flatProperties ++= sourceContainer.flatProperties
 
-  def resolvedPropertiesMap(/* TODO inject classes, instances, etc. needed for resolution */): MutableMap[String, Any] = {
+  def resolvedPropertiesMap(): MutableMap[String, Any] = {
 
     def recursivelySetProperty(path: List[String], rhs: Any, targetMap: MutableMap[String, Any]): Unit = {
       path match {
@@ -36,7 +36,7 @@ trait PropertyContainer {
     }
 
     val propertiesMap = mutable.Map.empty[String, Any]
-    flatProperties foreach {case (path, value) => recursivelySetProperty(path, value, propertiesMap)}
+    flatProperties foreach { case (path, value) => recursivelySetProperty(path, value, propertiesMap)}
     propertiesMap
   }
 
