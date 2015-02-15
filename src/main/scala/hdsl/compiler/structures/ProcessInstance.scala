@@ -7,7 +7,13 @@ import hdsl.parser.structures.wfelems.{SignalClass, ProcessClass}
 
 import scala.collection.mutable
 
-case class ProcessInstance(name: String, processClass: ProcessClass, instantiation: ProcessInstantiation) extends PropertyContainer {
+case class ProcessInstance(name: String, instantiation: ProcessInstantiation) extends PropertyContainer {
+
+  private val processClass = Wf.processClasses.get(instantiation.className) match {
+    case Some(processClass: ProcessClass) => processClass
+    case None => throw new RuntimeException(
+      s"Cannot instantiate process $name. Process class ${instantiation.className} not found")
+  }
 
   addAllProperties(processClass)
 

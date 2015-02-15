@@ -44,7 +44,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
   }
 
   private def createAnonymousProcess(processClass: ProcessClass): ProcessInstance = {
-    val processInstance = ProcessInstance(Wf.getNextAnonymousName, processClass, ProcessInstantiation(processClass
+    val processInstance = ProcessInstance(Wf.getNextAnonymousName, ProcessInstantiation(processClass
       .name, null))
     tmpProcesses += processClass.name -> processInstance
     Wf.allProcessInstances += processInstance

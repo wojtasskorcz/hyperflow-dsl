@@ -50,12 +50,7 @@ class HdslCompiler {
       case DotNotationAccessor(List(name: String)) => name
       case x => throw new RuntimeException(s"A process instance cannot be assigned to $x")
     }
-    val processClass = Wf.processClasses.get(instantiation.className) match {
-      case Some(processClass: ProcessClass) => processClass
-      case None => throw new RuntimeException(
-        s"Cannot instantiate process $processInstanceName. Process class ${instantiation.className} not found")
-    }
-    (processInstanceName, ProcessInstance(processInstanceName, processClass, instantiation))
+    (processInstanceName, ProcessInstance(processInstanceName, instantiation))
   }
 
   private def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
