@@ -90,4 +90,20 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(Nil, (collectPlots \ "outs").values)
   }
 
+  test("That comet_arrays workflow is properly compiled") {
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
+      new InputStreamReader(getClass.getResourceAsStream("/comet_arrays.hdsl")))
+    assert(parsingResult.successful)
+    val outMap = new HdslCompiler().compile(parsingResult.get)
+    val json = parse(write(outMap))
+
+    // processes test
+
+//    val p = for {
+//      JObject(process) <- json \ "processes"
+//      JField("name", JString("p")) <- process
+//    } yield process
+//    println(p)
+  }
+
 }

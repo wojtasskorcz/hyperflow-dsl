@@ -12,6 +12,7 @@ object Wf {
   val visibleProcessInstances = mutable.Map.empty[String, ProcessInstance]
   val allSignalInstances = mutable.MutableList.empty[SignalInstance]
   val allProcessInstances = mutable.MutableList.empty[ProcessInstance]
+  val variables = mutable.Map.empty[String, Any]
   private var anonymousElemCounter = 1
 
   def init() = {
@@ -46,12 +47,20 @@ object Wf {
     allProcessInstances += elem._2
   }
 
+  def putVariable(elem: (String, Any)) = {
+    checkNameAvailability(elem._1)
+    variables += elem
+  }
+
   def getNextAnonymousName = {
     val name = "$anonymous" + anonymousElemCounter
     anonymousElemCounter += 1
     name
   }
 
+  /**
+   * Variables and Process/Signal instance names can be overwritten, but Process/Signal classes have to stay visible at all times
+   */
   private def checkNameAvailability(name: String) = {
     if (signalClasses.contains(name) || processClasses.contains(name)) {
       throw new RuntimeException(s"Declaration of $name would overwrite a Signal or Process class definition")
