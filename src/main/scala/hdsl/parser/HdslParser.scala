@@ -89,7 +89,7 @@ object HdslParser extends JavaTokenParsers {
     case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)
   }
 
-  def compositionElem: Parser[CompositionElem] = dotNotationPath ~ opt(":" ~> lhs) ^^ {
+  def compositionElem: Parser[CompositionElem] = dotNotationPath ~ opt(":" ~> dotNotationPath) ^^ {
     case primaryPath ~ additionalPath => CompositionElem(List(primaryPath), additionalPath.orNull)
   } |
     "(" ~> rep1sep(dotNotationPath, ",") <~ ")" ^^ {
