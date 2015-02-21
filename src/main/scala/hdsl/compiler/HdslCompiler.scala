@@ -13,12 +13,16 @@ class HdslCompiler {
   Wf.init()
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
-    prepareDataStructures(wfElems)
-    generateOutput()
+    Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
+    HdslCompiler.prepareDataStructures(wfElems)
+    HdslCompiler.generateOutput()
   }
 
-  private def prepareDataStructures(wfElems: List[WfElem]) = {
-    Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
+}
+
+object HdslCompiler {
+
+  def prepareDataStructures(wfElems: List[WfElem]): Unit = {
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
@@ -30,7 +34,8 @@ class HdslCompiler {
       case VarAssignment(varName, rhs: Expr) => Wf.putVariable(varName -> rhs.evaluate)
       case c: Composition => c.compose()
       case forLoop: ForLoop => forLoop.execute()
-      case _ => throw new RuntimeException("TODO")
+      case c: Comment => "do nothing"
+      case x => throw new RuntimeException(s"TODO ($x)")
     })
   }
 
@@ -54,7 +59,7 @@ class HdslCompiler {
     Wf.visibleProcessInstances.get(accessor.getBase()) match {
       case Some(processInstance) => processInstance.setProperty(accessor.getResolvedProperties(), rhs)
       case None => throw new RuntimeException(
-          s"cannot set property ${accessor.getResolvedProperties()} as ${accessor.getBase()} is not defined")
+        s"cannot set property ${accessor.getResolvedProperties()} as ${accessor.getBase()} is not defined")
     }
   }
 

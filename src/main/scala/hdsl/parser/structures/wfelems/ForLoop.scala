@@ -1,6 +1,7 @@
 package hdsl.parser.structures.wfelems
 
 import hdsl.MutableMap
+import hdsl.compiler.HdslCompiler
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 
 import scala.collection.mutable
@@ -17,6 +18,7 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
     createTemporaryLoopVar()
     createTemporaryLoopIdx()
     println("With loop vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf.variables)
+    HdslCompiler.prepareDataStructures(wfElems)
     restoreBackedUpVars()
     println("After restoring vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf
       .variables)
