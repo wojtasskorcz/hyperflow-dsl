@@ -25,13 +25,20 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     // signals test
 
-    val xmlData = new JObject((for {
+    val config = new JObject((for {
       JObject(signal) <- json \ "signals"
       JField("name", JString("config")) <- signal
     } yield signal)(0))
 
-    assertEquals("//Collection[@label='station']", ((xmlData \ "data")(0) \ "xpath").values)
-    assertEquals("1.196499599E9", ((xmlData \ "data")(0) \ "start_time").values)
+    assertEquals("//Collection[@label='station']", ((config \ "data")(0) \ "xpath").values)
+    assertEquals("1.196499599E9", ((config \ "data")(0) \ "start_time").values)
+
+    val xml = new JObject((for {
+      JObject(signal) <- json \ "signals"
+      JField("name", JString("xml")) <- signal
+    } yield signal)(0))
+
+    assertEquals("data.xml", ((xml \ "data")(0) \ "path").values)
 
     // processes test
 
@@ -96,6 +103,23 @@ class HdslCompilerUnitTest extends UnitSpec {
     assert(parsingResult.successful)
     val outMap = new HdslCompiler().compile(parsingResult.get)
     val json = parse(write(outMap))
+
+    // signals test
+
+    val config = new JObject((for {
+      JObject(signal) <- json \ "signals"
+      JField("name", JString("config")) <- signal
+    } yield signal)(0))
+
+    assertEquals("//Collection[@label='station']", ((config \ "data")(0) \ "xpath").values)
+    assertEquals("1.196499599E9", ((config \ "data")(0) \ "start_time").values)
+
+    val xml = new JObject((for {
+      JObject(signal) <- json \ "signals"
+      JField("name", JString("xml")) <- signal
+    } yield signal)(0))
+
+    assertEquals("data.xml", ((xml \ "data")(0) \ "path").values)
 
     // processes test
 
