@@ -1,5 +1,6 @@
 package hdsl.compiler.structures
 
+import hdsl.MutableMap
 import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
 
 import scala.collection.mutable
@@ -61,10 +62,15 @@ object Wf {
   /**
    * Variables and Process/Signal instance names can be overwritten, but Process/Signal classes have to stay visible at all times
    */
-  private def checkNameAvailability(name: String) = {
+  def checkNameAvailability(name: String) = {
     if (signalClasses.contains(name) || processClasses.contains(name)) {
       throw new RuntimeException(s"Declaration of $name would overwrite a Signal or Process class definition")
     }
+  }
+
+  def forAllCollections(f: mutable.Map[String, _] => Unit) = {
+    val collectionsList = List(signalClasses, processClasses, visibleSignalInstances, visibleProcessInstances, variables)
+    collectionsList.foreach(f)
   }
 
 }

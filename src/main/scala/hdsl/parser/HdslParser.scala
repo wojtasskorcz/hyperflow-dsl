@@ -102,7 +102,7 @@ object HdslParser extends JavaTokenParsers {
 
   def forLoop: Parser[ForLoop] = "for" ~> "(" ~> ident ~ opt("," ~> ident) ~ "<-" ~ ident ~ (")" ~> "{" ~> rep(workflowElem) <~ "}") ^^ {
     case loopVar ~ Some(loopIdx) ~ "<-" ~ array ~ wfElems => ForLoop(loopVar, loopIdx, array, wfElems)
-    case loopVar ~ None ~ "<-" ~ array ~ wfElems => ForLoop(loopVar, null, array, wfElems)
+    case loopVar ~ None ~ "<-" ~ array ~ wfElems => ForLoop(loopVar, "$index", array, wfElems)
   }
 
   def comment: Parser[WfElem] = "//.*".r ^^ { case _ => null}

@@ -29,7 +29,7 @@ class HdslCompiler {
       case WfElemAssignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
       case VarAssignment(varName, rhs: Expr) => Wf.putVariable(varName -> rhs.evaluate)
       case c: Composition => c.compose()
-      case forLoop: ForLoop => "todo"
+      case forLoop: ForLoop => forLoop.execute()
       case _ => throw new RuntimeException("TODO")
     })
   }

@@ -12,7 +12,7 @@ class ProcessInstanceUnitTest extends UnitSpec {
 
   test("That setting properties works properly") {
     val processClass = ProcessClass("testClass", null, null, null)
-    Wf.putProcessClass("testClass", processClass)
+    Wf.putProcessClass("testClass" -> processClass)
     processClass.setProperty(List("lvl1", "end2"), Expr(2))
     processClass.setProperty(List("lvl1", "lvl2", "end3"), Expr(3))
     // these should be overwritten by the instance settings
