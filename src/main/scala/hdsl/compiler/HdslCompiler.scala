@@ -14,13 +14,46 @@ class HdslCompiler {
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
     Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
-    HdslCompiler.prepareDataStructures(wfElems)
+    val wfElemsAfterFirstPass = HdslCompiler.firstPass(wfElems)
+    HdslCompiler.prepareDataStructures(wfElemsAfterFirstPass)
     HdslCompiler.generateOutput()
   }
 
 }
 
 object HdslCompiler {
+
+  /**
+   * Maps the wfElems list into a new list where every signal/process array instantiation has its arrayAccessor
+   * resolved to an integer (e.g. instead of ReadDataSets[n] it is ReadDataSets[10])
+   * No changes to Wf object are performed (although temporary changes may occur, they are cleaned afterwards)
+   */
+  private def firstPass(wfElems: List[WfElem]): List[WfElem] = {
+    val wfElemsAfterFirstPass = wfElems.map({
+      case WfElemAssignment(lhs, rhs: SignalInstantiation) if rhs.arrayAccessor != null => {
+        val arraySize = rhs.arrayAccessor.evaluate
+        if (!arraySize.isInstanceOf[Int]) {
+          throw new RuntimeException(s"Cannot declare array of ${rhs.className} as the index expression doesn't evaluate to an integer")
+        }
+        WfElemAssignment(lhs, SignalInstantiation(rhs.className, rhs.args, Expr(arraySize)))
+      }
+      case WfElemAssignment(lhs, rhs: ProcessInstantiation) if rhs.arrayAccessor != null => {
+        val arraySize = rhs.arrayAccessor.evaluate
+        if (!arraySize.isInstanceOf[Int]) {
+          throw new RuntimeException(s"Cannot declare array of ${rhs.className} as the index expression doesn't evaluate to an integer")
+        }
+        WfElemAssignment(lhs, ProcessInstantiation(rhs.className, Expr(arraySize)))
+      }
+      case VarAssignment(varName, rhs: Expr) => {
+        Wf.putVariable(varName -> rhs.evaluate)
+        VarAssignment(varName, rhs)
+      }
+      case x => x
+    })
+    // clean the variables created for the first pass evaluation
+    Wf.variables.clear()
+    wfElemsAfterFirstPass
+  }
 
   def prepareDataStructures(wfElems: List[WfElem]): Unit = {
     wfElems.foreach({

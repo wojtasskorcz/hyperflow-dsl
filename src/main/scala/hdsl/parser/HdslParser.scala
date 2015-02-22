@@ -80,6 +80,7 @@ object HdslParser extends JavaTokenParsers {
   def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |
     "false" ^^ { case _ => Expr(false)} |
     stringLiteral ^^ { case str => Expr(str)} |
+    wholeNumber ^^ { case num => Expr(num.toInt)} |
     floatingPointNumber ^^ { case num => Expr(num.toDouble)} |
     ident ^^ { case varName => Expr(varName)}
 
