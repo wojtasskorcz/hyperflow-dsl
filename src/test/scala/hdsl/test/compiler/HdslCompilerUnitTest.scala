@@ -130,8 +130,8 @@ class HdslCompilerUnitTest extends UnitSpec {
     ps.foreach(rawP => {
       val p = new JObject(rawP)
       assertEquals("genXmlCollection", (p \ "function").values)
-//      assertEquals(true, (p \ "ordering").values)
-//      assertEquals("", (p \ "config" \ "args").values)
+      assertEquals(true, (p \ "ordering").values)
+      assertEquals("", (p \ "config" \ "args").values)
     })
     assertEquals(10, ps.size)
   }
