@@ -5,7 +5,7 @@ import java.io.InputStreamReader
 import hdsl.compiler.HdslCompiler
 import hdsl.parser.HdslParser
 import hdsl.test.UnitSpec
-import org.json4s.JsonAST.{JArray, JField, JObject, JString}
+import org.json4s.JsonAST.{JField, JObject, JString}
 import org.json4s.NoTypeHints
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization

@@ -68,13 +68,13 @@ object HdslParser extends JavaTokenParsers {
   def rhs: Parser[Rhs] = signalInstantiation | processInstantiation | expr
 
   def signalInstantiation: Parser[SignalInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
-    case name ~ args ~ Some(expr) => SignalInstantiation(name, args, expr)
-    case name ~ args ~ None => SignalInstantiation(name, args, null)
+    case className ~ args ~ Some(expr) => SignalInstantiation(className, args, expr)
+    case className ~ args ~ None => SignalInstantiation(className, args, null)
   }
 
   def processInstantiation: Parser[ProcessInstantiation] = "new" ~> ident ~ opt(arrayAccessor) ^^ {
-    case name ~ Some(expr) => ProcessInstantiation(name, expr)
-    case name ~ None => ProcessInstantiation(name, null)
+    case className ~ Some(expr) => ProcessInstantiation(className, expr)
+    case className ~ None => ProcessInstantiation(className, null)
   }
 
   def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |
