@@ -32,16 +32,15 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
       if (arrayInstance.instantiation.arrayAccessor == null) {
         throw new RuntimeException(s"Cannot iterate over $array as it is not an array")
       }
-      val loopVarInstance = SignalInstance(loopVar, arrayInstance.instantiation.arraylessCopy)
-      Wf.putSignalInstance(loopVar -> loopVarInstance)
+      val loopVarInstance = Wf.visibleSignalInstances(s"$array[0]")
+      Wf.visibleSignalInstances += loopVar -> loopVarInstance
     } else if (Wf.visibleProcessInstances.contains(array)) {
       val arrayInstance = Wf.visibleProcessInstances(array)
       if (arrayInstance.instantiation.arrayAccessor == null) {
         throw new RuntimeException(s"Cannot iterate over $array as it is not an array")
       }
-      val loopVarInstance = ProcessInstance(loopVar, arrayInstance.instantiation.arraylessCopy)
-      loopVarInstance.addAllProperties(arrayInstance)
-      Wf.putProcessInstance(loopVar -> loopVarInstance)
+      val loopVarInstance = Wf.visibleProcessInstances(s"$array[0]")
+      Wf.visibleProcessInstances += loopVar -> loopVarInstance
     } else {
       throw new RuntimeException(s"Cannot iterate over $array as it is neither signal nor process array")
     }
