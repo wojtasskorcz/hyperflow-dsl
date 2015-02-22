@@ -5,7 +5,7 @@ import java.io.InputStreamReader
 import hdsl.compiler.HdslCompiler
 import hdsl.parser.HdslParser
 import hdsl.test.UnitSpec
-import org.json4s.JsonAST.{JField, JObject, JString}
+import org.json4s.JsonAST.{JArray, JField, JObject, JString}
 import org.json4s.NoTypeHints
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
@@ -123,11 +123,17 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     // processes test
 
-//    val p = for {
-//      JObject(process) <- json \ "processes"
-//      JField("name", JString("p")) <- process
-//    } yield process
-//    println(p)
+    val ps: List[List[JField]] = for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("genXmlCollection")) <- process
+    } yield process
+    ps.foreach(rawP => {
+      val p = new JObject(rawP)
+//      assertEquals("genXmlCollection", (p \ "function").values)
+//      assertEquals(true, (p \ "ordering").values)
+//      assertEquals("", (p \ "config" \ "args").values)
+    })
+//    assertEquals(10, ps.size)
   }
 
 }
