@@ -11,6 +11,11 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
 
   require(loopVar != null && loopIdx != null)
 
+  /**
+   * A list of variables (SignalInstances, ProcessInstances and Variables) backed up before entering the loop. The
+   * variables are stored as a tuple:
+   * (Wf collection originally containing the variable, variable name, variable value)
+   */
   private val varsBackup = mutable.MutableList.empty[(MutableMap[String, _], String, Any)]
 
   def execute() = {

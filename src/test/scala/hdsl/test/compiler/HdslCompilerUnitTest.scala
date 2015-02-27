@@ -123,17 +123,33 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     // processes test
 
-    val ps: List[List[JField]] = for {
+    val ps: List[JObject] = (for {
       JObject(process) <- json \ "processes"
       JField("function", JString("genXmlCollection")) <- process
-    } yield process
-    ps.foreach(rawP => {
-      val p = new JObject(rawP)
+    } yield process).map(new JObject(_))
+
+    ps.foreach(p => {
+      println(pretty(render(p)))
       assertEquals("genXmlCollection", (p \ "function").values)
       assertEquals(true, (p \ "ordering").values)
       assertEquals("", (p \ "config" \ "args").values)
+      assertEquals(List("xml", "config"), (p \ "ins").values)
+      val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
+      assertEquals(1, pOuts.length)
+//      val pOutSignalParts = pOuts(0).split(':')
+//      val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
+//      assertEquals("stations", pOutSignal)
+//      // check if the count signal was declared in signals array
+//      val pCountSignal = new JObject((for {
+//        JObject(signal) <- json \ "signals"
+//        JField("name", JString(`pCountSignalName`)) <- signal
+//      } yield signal)(0))
+//      assertEquals(pCountSignalName, (pCountSignal \ "name").values)
     })
+
     assertEquals(10, ps.size)
+    assertEquals(10, ps.map(p => (p \ "name").values).distinct.size)
+
   }
 
 }
