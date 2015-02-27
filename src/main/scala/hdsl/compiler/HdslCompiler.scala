@@ -59,8 +59,7 @@ object HdslCompiler {
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
-      case WfElemAssignment(lhs, rhs: SignalInstantiation) =>
-        Wf.putSignalInstance(prepareExplicitSignalInstance(lhs, rhs))
+      case WfElemAssignment(lhs, rhs: SignalInstantiation) => instantiateSignal(lhs, rhs)
       case WfElemAssignment(lhs, rhs: ProcessInstantiation) => instantiateProcess(lhs, rhs)
       case WfElemAssignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
       case VarAssignment(varName, rhs: Expr) => Wf.putVariable(varName -> rhs.evaluate)
@@ -69,6 +68,23 @@ object HdslCompiler {
       case c: Comment => "do nothing"
       case x => throw new RuntimeException(s"TODO ($x)")
     })
+  }
+
+  private def instantiateSignal(lhs: DotNotationAccessor, rhs: SignalInstantiation) = {
+    if (rhs.arrayAccessor == null) {
+      Wf.putSignalInstance(prepareExplicitSignalInstance(lhs, rhs))
+    } else {
+      // create an array signal (to be able to read the array's size later), but don't generate it in output JSON
+      val (arrayName, arraySignal) = prepareExplicitSignalInstance(lhs, rhs)
+      Wf.checkNameAvailability(arrayName)
+      Wf.visibleSignalInstances += arrayName -> arraySignal
+
+      0 until rhs.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
+        val stringifiedName = Wf.stringify(DotNotationAccessor(List(arrayName, Expr(index))))
+        val signalInstance = SignalInstance(stringifiedName, SignalInstantiation(arraySignal.instantiation.className, arraySignal.instantiation.args, null))
+        Wf.putSignalInstance(stringifiedName -> signalInstance)
+      })
+    }
   }
 
   private def prepareExplicitSignalInstance(lhs: DotNotationAccessor, instantiation: SignalInstantiation): (String, SignalInstance) = {
@@ -89,9 +105,10 @@ object HdslCompiler {
       Wf.visibleProcessInstances += arrayName -> arrayProcess
 
       0 until rhs.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val processInstance = ProcessInstance(s"$arrayName[$index]", ProcessInstantiation(arrayProcess.instantiation.className, null))
+        val stringifiedName = Wf.stringify(DotNotationAccessor(List(arrayName, Expr(index))))
+        val processInstance = ProcessInstance(stringifiedName, ProcessInstantiation(arrayProcess.instantiation.className, null))
         processInstance.addAllProperties(arrayProcess)
-        Wf.putProcessInstance(s"$arrayName[$index]" -> processInstance)
+        Wf.putProcessInstance(stringifiedName -> processInstance)
       })
     }
   }

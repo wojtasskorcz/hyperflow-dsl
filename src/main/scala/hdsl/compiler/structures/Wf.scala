@@ -1,6 +1,8 @@
 package hdsl.compiler.structures
 
 import hdsl.MutableMap
+import hdsl.parser.structures.DotNotationAccessor
+import hdsl.parser.structures.rhs.Expr
 import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
 
 import scala.collection.mutable
@@ -71,6 +73,11 @@ object Wf {
   def forAllCollections(f: mutable.Map[String, _] => Unit) = {
     val collectionsList = List(signalClasses, processClasses, visibleSignalInstances, visibleProcessInstances, variables)
     collectionsList.foreach(f)
+  }
+
+  def stringify(accessor: DotNotationAccessor): String = accessor match {
+    case DotNotationAccessor(List(simpleName: String)) => simpleName
+    case DotNotationAccessor(List(name: String, idx: Expr)) => s"$name[${idx.evaluate}]"
   }
 
 }

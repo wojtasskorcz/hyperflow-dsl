@@ -88,7 +88,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
 
     signalElem match {
       case CompositionElem(signalNames, _) => signalNames.foreach(signalName =>
-        Wf.visibleSignalInstances.get(signalName.getBase()) match {
+        Wf.visibleSignalInstances.get(Wf.stringify(signalName)) match {
           case Some(signalInstance) => processInstance.addOutput(signalInstance)
           case None => processInstance.addOutput(createOutputSignal(signalName.getBase(), processInstance))
         })
@@ -98,8 +98,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
   private def createOutputSignal(signalName: String, processInstance: ProcessInstance): SignalInstance = {
     val signalClass = processInstance.getOutSignalClass
     if (signalClass.args.nonEmpty) {
-      throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} " +
-        s"because the class takes arguments")
+      throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} because the class takes arguments")
     }
     val signalInstance = SignalInstance(signalName, SignalInstantiation(signalClass.name, Nil, null))
     Wf.putSignalInstance(signalName -> signalInstance)
