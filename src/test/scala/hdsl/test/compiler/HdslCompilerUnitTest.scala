@@ -6,7 +6,7 @@ import hdsl.compiler.HdslCompiler
 import hdsl.parser.HdslParser
 import hdsl.test.UnitSpec
 import org.json4s.JsonAST.{JField, JObject, JString}
-import org.json4s.NoTypeHints
+import org.json4s.{JValue, NoTypeHints}
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.write
@@ -79,6 +79,8 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     assertEquals(List("dataParts", "config"), (computeStats \ "ins").values)
     assertEquals(List("stats"), (computeStats \ "outs").values)
+    ensureSignal("dataParts", json)
+    ensureSignal("stats", json)
 
     val plotGraphs = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -150,6 +152,13 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(10, ps.size)
     assertEquals(10, ps.map(p => (p \ "name").values).distinct.size)
     assertEquals(10, ps.map(p => (p \ "outs")(0).values).distinct.size)
+  }
+
+  def ensureSignal(name: String, json: JValue) = {
+    (for {
+      JObject(signal) <- json \ "signals"
+      JField("name", JString(`name`)) <- signal
+    } yield signal)(0)
   }
 
 }
