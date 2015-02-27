@@ -3,6 +3,7 @@ package hdsl.parser.structures.wfelems
 import hdsl.MutableMap
 import hdsl.compiler.HdslCompiler
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
+import hdsl.parser.structures.traits.Instantiated
 
 import scala.collection.mutable
 
@@ -20,28 +21,9 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
     backupVar(loopIdx)
 
     if (Wf.visibleSignalInstances.contains(array)) {
-      val arrayInstance = Wf.visibleSignalInstances(array)
-      if (arrayInstance.instantiation.arrayAccessor == null) {
-        throw new RuntimeException(s"Cannot iterate over $array as it is not an array")
-      }
-      0 to arrayInstance.instantiation.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val loopVarInstance = Wf.visibleSignalInstances(s"$array[$index]")
-        Wf.visibleSignalInstances += loopVar -> loopVarInstance
-        Wf.variables += loopIdx -> index
-        HdslCompiler.prepareDataStructures(wfElems)
-      })
-
+      loopOverArray(Wf.visibleSignalInstances)
     } else if (Wf.visibleProcessInstances.contains(array)) {
-      val arrayInstance = Wf.visibleProcessInstances(array)
-      if (arrayInstance.instantiation.arrayAccessor == null) {
-        throw new RuntimeException(s"Cannot iterate over $array as it is not an array")
-      }
-      0 until arrayInstance.instantiation.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val loopVarInstance = Wf.visibleProcessInstances(s"$array[$index]")
-        Wf.visibleProcessInstances += loopVar -> loopVarInstance
-        Wf.variables += loopIdx -> index
-        HdslCompiler.prepareDataStructures(wfElems)
-      })
+      loopOverArray(Wf.visibleProcessInstances)
     } else {
       throw new RuntimeException(s"Cannot iterate over $array as it is neither signal nor process array")
     }
@@ -49,6 +31,27 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
     println("With loop vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf.variables)
     restoreBackedUpVars()
     println("After restoring vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf.variables)
+  }
+
+  /**
+   * Loops over the loop's `array` using `typeMap` collection (either Wf.visibleSignalInstances or Wf
+   * .visibleProcessInstances depending on the type of `array`) to store temporary variables. With each iteration all
+   * WfElems contained within the loop are compiled.
+   * @param typeMap Wf.visibleSignalInstnaces (if Wf.visibleSignalInstances.contains(array)) or Wf
+   *                .visibleProcessInstances (if Wf.visibleProcessInstances.contains(array))
+   * @tparam T either SignalInstance or ProcessInstance determined as described above
+   */
+  private def loopOverArray[T <: Instantiated](typeMap: MutableMap[String, T]) = {
+    val arrayInstance = typeMap(array)
+    if (arrayInstance.instantiation.arrayAccessor == null) {
+      throw new RuntimeException(s"Cannot iterate over $array as it is not an array")
+    }
+    0 until arrayInstance.instantiation.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
+      val loopVarInstance = typeMap(s"$array[$index]")
+      typeMap += loopVar -> loopVarInstance
+      Wf.variables += loopIdx -> index
+      HdslCompiler.prepareDataStructures(wfElems)
+    })
   }
 
   private def backupVar(varName: String) = {

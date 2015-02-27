@@ -3,6 +3,7 @@ package hdsl.compiler.structures
 import hdsl.MutableMap
 import hdsl.parser.structures.Arg
 import hdsl.parser.structures.rhs.{Expr, SignalInstantiation}
+import hdsl.parser.structures.traits.Instantiated
 
 import scala.collection.mutable
 
@@ -10,7 +11,7 @@ import scala.collection.mutable
  * `name` is the name of the instance that will be set in generated JSON (may be sth like `anonymous$12` or `sigArr$0[3]`
  * it is NOT the name of the identifier (variable) this signal instance is assigned to
  */
-case class SignalInstance(name: String, instantiation: SignalInstantiation) {
+case class SignalInstance(name: String, instantiation: SignalInstantiation) extends Instantiated {
 
   final val signalClass = Wf.signalClasses.get(instantiation.className) match {
     case Some(signalClass) => signalClass

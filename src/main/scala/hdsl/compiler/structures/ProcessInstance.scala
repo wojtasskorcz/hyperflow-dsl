@@ -2,7 +2,7 @@ package hdsl.compiler.structures
 
 import hdsl._
 import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation}
-import hdsl.parser.structures.traits.PropertyContainer
+import hdsl.parser.structures.traits.{Instantiated, PropertyContainer}
 import hdsl.parser.structures.wfelems.{SignalClass, ProcessClass}
 
 import scala.collection.mutable
@@ -11,7 +11,7 @@ import scala.collection.mutable
  * `name` is the name of the instance that will be set in generated JSON (may be sth like `anonymous$12` or `pArr$0[3]`
  * it is NOT the name of the identifier (variable) this process instance is assigned to
  */
-case class ProcessInstance(name: String, instantiation: ProcessInstantiation) extends PropertyContainer {
+case class ProcessInstance(name: String, instantiation: ProcessInstantiation) extends PropertyContainer with Instantiated {
 
   final val processClass = Wf.processClasses.get(instantiation.className) match {
     case Some(processClass: ProcessClass) => processClass
