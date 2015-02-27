@@ -37,7 +37,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
         processInstance.addInput(Wf.visibleSignalInstances(signalName.getBase()), s":${countSignal.name}")
       }
       case CompositionElem(signalNames, _) => signalNames.foreach(
-        signalName => processInstance.addInput(Wf.visibleSignalInstances(Wf.stringify(signalName)))
+        signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify))
       )
     }
   }
@@ -87,9 +87,9 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
 
     signalElem match {
       case CompositionElem(signalNames, _) => signalNames.foreach(signalName =>
-        Wf.visibleSignalInstances.get(Wf.stringify(signalName)) match {
+        Wf.visibleSignalInstances.get(signalName.stringify) match {
           case Some(signalInstance) => processInstance.addOutput(signalInstance)
-          case None => processInstance.addOutput(createOutputSignal(Wf.stringify(signalName), processInstance))
+          case None => processInstance.addOutput(createOutputSignal(signalName.stringify, processInstance))
         })
     }
   }

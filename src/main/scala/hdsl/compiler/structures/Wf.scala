@@ -75,9 +75,4 @@ object Wf {
     collectionsList.foreach(f)
   }
 
-  def stringify(accessor: DotNotationAccessor): String = accessor match {
-    case DotNotationAccessor(List(simpleName: String)) => simpleName
-    case DotNotationAccessor(List(name: String, idx: Expr)) => s"$name[${idx.evaluate}]"
-  }
-
 }

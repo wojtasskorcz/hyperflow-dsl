@@ -27,4 +27,9 @@ case class DotNotationAccessor(parts: List[Any]) {
 
   def getResolvedParts(): List[String] = getBase() :: getResolvedProperties()
 
+  def stringify: String = parts match {
+    case List(simpleName: String) => simpleName
+    case List(name: String, idx: Expr) => s"$name[${idx.evaluate}]"
+  }
+
 }

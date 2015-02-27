@@ -80,7 +80,7 @@ object HdslCompiler {
       Wf.visibleSignalInstances += arrayName -> arraySignal
 
       0 until rhs.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val stringifiedName = Wf.stringify(DotNotationAccessor(List(arrayName, Expr(index))))
+        val stringifiedName = DotNotationAccessor(List(arrayName, Expr(index))).stringify
         val signalInstance = SignalInstance(stringifiedName, SignalInstantiation(arraySignal.instantiation.className, arraySignal.instantiation.args, null))
         Wf.putSignalInstance(stringifiedName -> signalInstance)
       })
@@ -105,7 +105,7 @@ object HdslCompiler {
       Wf.visibleProcessInstances += arrayName -> arrayProcess
 
       0 until rhs.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val stringifiedName = Wf.stringify(DotNotationAccessor(List(arrayName, Expr(index))))
+        val stringifiedName = DotNotationAccessor(List(arrayName, Expr(index))).stringify
         val processInstance = ProcessInstance(stringifiedName, ProcessInstantiation(arrayProcess.instantiation.className, null))
         processInstance.addAllProperties(arrayProcess)
         Wf.putProcessInstance(stringifiedName -> processInstance)
