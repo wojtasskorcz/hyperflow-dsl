@@ -57,12 +57,8 @@ class HdslCompilerUnitTest extends UnitSpec {
     val pOutSignalParts = pOuts(0).split(':')
     val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
     assertEquals("stations", pOutSignal)
-    // check if the count signal was declared in signals array
-    val pCountSignal = new JObject((for {
-      JObject(signal) <- json \ "signals"
-      JField("name", JString(`pCountSignalName`)) <- signal
-    } yield signal)(0))
-    assertEquals(pCountSignalName, (pCountSignal \ "name").values)
+    ensureSignal("stations", json)
+    ensureSignal(pCountSignalName, json)
 
     val partitionData = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -71,6 +67,7 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     assertEquals(List("stations"), (partitionData \ "ins").values)
     assertEquals(List("dataParts"), (partitionData \ "outs").values)
+    ensureSignal("dataParts", json)
 
     val computeStats = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -79,7 +76,6 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     assertEquals(List("dataParts", "config"), (computeStats \ "ins").values)
     assertEquals(List("stats"), (computeStats \ "outs").values)
-    ensureSignal("dataParts", json)
     ensureSignal("stats", json)
 
     val plotGraphs = new JObject((for {
@@ -89,6 +85,7 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     assertEquals(List("stats"), (plotGraphs \ "ins").values)
     assertEquals(List("graph"), (plotGraphs \ "outs").values)
+    ensureSignal("graph", json)
 
     val collectPlots = new JObject((for {
       JObject(process) <- json \ "processes"
