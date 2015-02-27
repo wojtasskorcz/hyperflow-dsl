@@ -100,6 +100,7 @@ class HdslCompilerUnitTest extends UnitSpec {
   }
 
   test("That comet_arrays workflow is properly compiled") {
+    val n = 3
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream("/comet_arrays.hdsl")))
     assert(parsingResult.successful)
@@ -130,9 +131,9 @@ class HdslCompilerUnitTest extends UnitSpec {
       JField("function", JString("genXmlCollection")) <- process
     } yield process).map(new JObject(_))
 
+    var psOuts = List[String]()
     ps.foreach(p => {
-      println(pretty(render(p)))
-      assertEquals("genXmlCollection", (p \ "function").values)
+//      println(pretty(render(p)))
       assertEquals(true, (p \ "ordering").values)
       assertEquals("", (p \ "config" \ "args").values)
       assertEquals(List("xml", "config"), (p \ "ins").values)
@@ -140,7 +141,7 @@ class HdslCompilerUnitTest extends UnitSpec {
       assertEquals(1, pOuts.length)
 //      val pOutSignalParts = pOuts(0).split(':')
 //      val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
-//      assertEquals("stations", pOutSignal)
+      psOuts :+= pOuts(0) // change to pOutSignal later
 //      // check if the count signal was declared in signals array
 //      val pCountSignal = new JObject((for {
 //        JObject(signal) <- json \ "signals"
@@ -149,9 +150,24 @@ class HdslCompilerUnitTest extends UnitSpec {
 //      assertEquals(pCountSignalName, (pCountSignal \ "name").values)
     })
 
-    assertEquals(10, ps.size)
-    assertEquals(10, ps.map(p => (p \ "name").values).distinct.size)
-    assertEquals(10, ps.map(p => (p \ "outs")(0).values).distinct.size)
+    assertEquals(n, ps.size)
+    assertEquals(n, ps.map(p => (p \ "name").values).distinct.size)
+    assertEquals(n, psOuts.distinct.size)
+
+    val partitionDatas: List[JObject] = (for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("partitionData")) <- process
+    } yield process).map(new JObject(_))
+
+    for ((p, idx) <- partitionDatas.view.zipWithIndex.force) {
+//      println(pretty(render(p)))
+      assertEquals(psOuts(idx), (p \ "ins")(0).values)
+    }
+
+    assertEquals(n, partitionDatas.size)
+    assertEquals(n, partitionDatas.map(p => (p \ "name").values).distinct.size)
+    assertEquals(n, partitionDatas.map(p => (p \ "ins")(0).values).distinct.size)
+    assertEquals(n, partitionDatas.map(p => (p \ "outs")(0).values).distinct.size)
   }
 
   def ensureSignal(name: String, json: JValue) = {

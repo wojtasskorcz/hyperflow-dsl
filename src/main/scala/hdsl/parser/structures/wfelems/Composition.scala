@@ -15,7 +15,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     elems zip elems.tail foreach {
       case (from, to) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
       case (from, to) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to)
-      case _ => throw new RuntimeException("TODO")
+      case x => throw new RuntimeException("TODO " + x)
     }
   }
 
@@ -32,14 +32,13 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     }
 
     signalElem match {
-      case CompositionElem(signalNames, null) => signalNames.foreach(
-        signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName.getBase()))
-      )
       case CompositionElem(List(signalName), DotNotationAccessor(List(countSourceSignalName: String, "count"))) => {
         val countSignal = createCountSignal(countSourceSignalName)
         processInstance.addInput(Wf.visibleSignalInstances(signalName.getBase()), s":${countSignal.name}")
       }
-      case CompositionElem(List(signalName), accessor: DotNotationAccessor) => "TODO"
+      case CompositionElem(signalNames, _) => signalNames.foreach(
+        signalName => processInstance.addInput(Wf.visibleSignalInstances(Wf.stringify(signalName)))
+      )
     }
   }
 
@@ -90,7 +89,7 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
       case CompositionElem(signalNames, _) => signalNames.foreach(signalName =>
         Wf.visibleSignalInstances.get(Wf.stringify(signalName)) match {
           case Some(signalInstance) => processInstance.addOutput(signalInstance)
-          case None => processInstance.addOutput(createOutputSignal(signalName.getBase(), processInstance))
+          case None => processInstance.addOutput(createOutputSignal(Wf.stringify(signalName), processInstance))
         })
     }
   }

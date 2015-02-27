@@ -31,7 +31,7 @@ xml = new XmlData("data.xml")
 config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
 
 // przez var oznaczamy zmienne nie będące sygnałami ani procesami
-var n = 10
+var n = 3
 
 // deklaracje tablic procesów i sygnałów
 pArr = new ReadDataSets[n]
