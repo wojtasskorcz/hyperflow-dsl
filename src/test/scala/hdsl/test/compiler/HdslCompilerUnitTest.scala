@@ -149,7 +149,7 @@ class HdslCompilerUnitTest extends UnitSpec {
 
     assertEquals(10, ps.size)
     assertEquals(10, ps.map(p => (p \ "name").values).distinct.size)
-
+    assertEquals(10, ps.map(p => (p \ "outs")(0).values).distinct.size)
   }
 
 }
