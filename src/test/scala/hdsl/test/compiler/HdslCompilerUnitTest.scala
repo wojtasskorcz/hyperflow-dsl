@@ -136,15 +136,10 @@ class HdslCompilerUnitTest extends UnitSpec {
       assertEquals(List("xml", "config"), (p \ "ins").values)
       val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
       assertEquals(1, pOuts.length)
-//      val pOutSignalParts = pOuts(0).split(':')
-//      val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
-      psOuts :+= pOuts(0) // change to pOutSignal later
-//      // check if the count signal was declared in signals array
-//      val pCountSignal = new JObject((for {
-//        JObject(signal) <- json \ "signals"
-//        JField("name", JString(`pCountSignalName`)) <- signal
-//      } yield signal)(0))
-//      assertEquals(pCountSignalName, (pCountSignal \ "name").values)
+      val pOutSignalParts = pOuts(0).split(':')
+      val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
+      psOuts :+= pOutSignal
+      ensureSignal(pCountSignalName, json)
     })
 
     assertEquals(n, ps.size)
@@ -188,6 +183,25 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(n, computeStats.map(p => (p \ "name").values).distinct.size)
     assertEquals(n, computeStats.map(p => (p \ "ins")(0).values).distinct.size)
     assertEquals(n, computeStatsOuts.distinct.size)
+
+    val plotGraphs: List[JObject] = (for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("plotData")) <- process
+    } yield process).map(new JObject(_))
+
+    var plotGraphsOuts = List[String]()
+    for ((p, idx) <- plotGraphs.view.zipWithIndex.force) {
+      assertEquals(List(computeStatsOuts(idx)), (p \ "ins").values)
+      val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
+      assertEquals(1, pOuts.length)
+      ensureSignal(pOuts(0), json)
+      plotGraphsOuts :+= pOuts(0)
+    }
+
+    assertEquals(n, plotGraphs.size)
+    assertEquals(n, plotGraphs.map(p => (p \ "name").values).distinct.size)
+    assertEquals(n, plotGraphs.map(p => (p \ "ins")(0).values).distinct.size)
+    assertEquals(n, plotGraphsOuts.distinct.size)
   }
 
   private def ensureSignal(name: String, json: JValue) = {

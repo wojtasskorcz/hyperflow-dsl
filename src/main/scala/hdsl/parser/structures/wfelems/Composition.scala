@@ -32,9 +32,9 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
     }
 
     signalElem match {
-      case CompositionElem(List(signalName), DotNotationAccessor(List(countSourceSignalName: String, "count"))) => {
-        val countSignal = createCountSignal(countSourceSignalName)
-        processInstance.addInput(Wf.visibleSignalInstances(signalName.getBase()), s":${countSignal.name}")
+      case CompositionElem(List(signalName), DotNotationAccessor(parts)) if parts.last == "count" => {
+        val countSignal = createCountSignal(DotNotationAccessor(parts.dropRight(1)).stringify)
+        processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify), s":${countSignal.name}")
       }
       case CompositionElem(signalNames, _) => signalNames.foreach(
         signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify))
