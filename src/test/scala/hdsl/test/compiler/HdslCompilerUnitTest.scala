@@ -156,18 +156,41 @@ class HdslCompilerUnitTest extends UnitSpec {
       JField("function", JString("partitionData")) <- process
     } yield process).map(new JObject(_))
 
+    var partitionDatasOuts = List[String]()
     for ((p, idx) <- partitionDatas.view.zipWithIndex.force) {
-//      println(pretty(render(p)))
-      assertEquals(psOuts(idx), (p \ "ins")(0).values)
+      assertEquals(List(psOuts(idx)), (p \ "ins").values)
+      val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
+      assertEquals(1, pOuts.length)
+      ensureSignal(pOuts(0), json)
+      partitionDatasOuts :+= pOuts(0)
     }
 
     assertEquals(n, partitionDatas.size)
     assertEquals(n, partitionDatas.map(p => (p \ "name").values).distinct.size)
     assertEquals(n, partitionDatas.map(p => (p \ "ins")(0).values).distinct.size)
-    assertEquals(n, partitionDatas.map(p => (p \ "outs")(0).values).distinct.size)
+    assertEquals(n, partitionDatasOuts.distinct.size)
+
+    val computeStats: List[JObject] = (for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("computeStats")) <- process
+    } yield process).map(new JObject(_))
+
+    var computeStatsOuts = List[String]()
+    for ((p, idx) <- computeStats.view.zipWithIndex.force) {
+      assertEquals(List(partitionDatasOuts(idx), "config"), (p \ "ins").values)
+      val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
+      assertEquals(1, pOuts.length)
+      ensureSignal(pOuts(0), json)
+      computeStatsOuts :+= pOuts(0)
+    }
+
+    assertEquals(n, computeStats.size)
+    assertEquals(n, computeStats.map(p => (p \ "name").values).distinct.size)
+    assertEquals(n, computeStats.map(p => (p \ "ins")(0).values).distinct.size)
+    assertEquals(n, computeStatsOuts.distinct.size)
   }
 
-  def ensureSignal(name: String, json: JValue) = {
+  private def ensureSignal(name: String, json: JValue) = {
     (for {
       JObject(signal) <- json \ "signals"
       JField("name", JString(`name`)) <- signal
