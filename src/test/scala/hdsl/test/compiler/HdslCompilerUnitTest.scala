@@ -129,6 +129,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     } yield process).map(new JObject(_))
 
     var psOuts = List[String]()
+    var psCounts = List[String]()
     ps.foreach(p => {
 //      println(pretty(render(p)))
       assertEquals(true, (p \ "ordering").values)
@@ -139,6 +140,8 @@ class HdslCompilerUnitTest extends UnitSpec {
       val pOutSignalParts = pOuts(0).split(':')
       val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
       psOuts :+= pOutSignal
+      psCounts :+= pCountSignalName
+      ensureSignal(pOutSignal, json)
       ensureSignal(pCountSignalName, json)
     })
 
@@ -202,6 +205,20 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(n, plotGraphs.map(p => (p \ "name").values).distinct.size)
     assertEquals(n, plotGraphs.map(p => (p \ "ins")(0).values).distinct.size)
     assertEquals(n, plotGraphsOuts.distinct.size)
+
+    val collectPlots: List[JObject] = (for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("collectGraphs")) <- process
+    } yield process).map(new JObject(_))
+
+    for ((p, idx) <- collectPlots.view.zipWithIndex.force) {
+      assertEquals(List(s"${plotGraphsOuts(idx)}:${psCounts(idx)}"), (p \ "ins").values)
+      assertEquals(Nil, (p \ "outs").values)
+    }
+
+    assertEquals(n, collectPlots.size)
+    assertEquals(n, collectPlots.map(p => (p \ "name").values).distinct.size)
+    assertEquals(n, collectPlots.map(p => (p \ "ins")(0).values).distinct.size)
   }
 
   private def ensureSignal(name: String, json: JValue) = {
