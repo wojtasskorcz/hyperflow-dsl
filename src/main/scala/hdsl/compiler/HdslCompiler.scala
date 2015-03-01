@@ -1,10 +1,10 @@
 package hdsl.compiler
 
 import hdsl.MutableMap
-import hdsl.compiler.structures.{Wf, ProcessInstance, SignalInstance}
+import hdsl.compiler.structures.Wf
 import hdsl.parser.structures.DotNotationAccessor
-import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation, SignalInstantiation}
-import hdsl.parser.structures.traits.{Instantiated, Instantiation}
+import hdsl.parser.structures.rhs.Expr
+import hdsl.parser.structures.traits.Instantiation
 import hdsl.parser.structures.wfelems._
 
 import scala.collection.mutable
@@ -53,7 +53,7 @@ object HdslCompiler {
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
-      case WfElemAssignment(lhs, rhs: Instantiation) => instantiate(lhs, rhs)
+      case WfElemAssignment(lhs, rhs: Instantiation) => rhs.instantiate(lhs)
       case WfElemAssignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
       case VarAssignment(varName, rhs: Expr) => Wf.putVariable(varName -> rhs.evaluate)
       case c: Composition => c.compose()
@@ -61,28 +61,6 @@ object HdslCompiler {
       case c: Comment => "do nothing"
       case x => throw new RuntimeException(s"TODO ($x)")
     })
-  }
-
-  private def instantiate(lhs: DotNotationAccessor, instantiation: Instantiation) = {
-    val instanceName = lhs match {
-      case DotNotationAccessor(List(name: String)) => name
-      case x => throw new RuntimeException(s"A signal or process instance cannot be assigned to $x")
-    }
-    val instance = instantiation.prepareInstance(instanceName)
-
-    if (instantiation.arrayAccessor == null) {
-      instance.putInstanceToVisibleAndAll(instanceName)
-    } else {
-      // create an array signal (to be able to read the array's size later), but don't generate it in output JSON
-      Wf.checkNameAvailability(instanceName)
-      instance.putInstanceOnlyToVisible(instanceName)
-
-      0 until instantiation.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val arrayElemName = DotNotationAccessor(List(instanceName, Expr(index))).stringify
-        val arrayElemInstance = instance.instantiation.changedArrayCopy(null).prepareInstance(arrayElemName)
-        arrayElemInstance.putInstanceToVisibleAndAll(arrayElemName)
-      })
-    }
   }
 
   private def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
