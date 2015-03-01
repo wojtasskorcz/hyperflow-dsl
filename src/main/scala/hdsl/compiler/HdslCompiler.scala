@@ -9,20 +9,14 @@ import hdsl.parser.structures.wfelems._
 
 import scala.collection.mutable
 
-class HdslCompiler {
-
-  Wf.init()
+object HdslCompiler {
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
     Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
     val wfElemsAfterFirstPass = HdslCompiler.firstPass(wfElems)
-    HdslCompiler.prepareDataStructures(wfElemsAfterFirstPass)
+    HdslCompiler.secondPass(wfElemsAfterFirstPass)
     HdslCompiler.generateOutput()
   }
-
-}
-
-object HdslCompiler {
 
   /**
    * Maps the wfElems list into a new list where every signal/process array instantiation has its arrayAccessor
@@ -49,7 +43,7 @@ object HdslCompiler {
     wfElemsAfterFirstPass
   }
 
-  def prepareDataStructures(wfElems: List[WfElem]): Unit = {
+  def secondPass(wfElems: List[WfElem]): Unit = {
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)

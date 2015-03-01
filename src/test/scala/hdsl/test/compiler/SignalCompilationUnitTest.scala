@@ -15,7 +15,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
     intercept[RuntimeException] {
-      new HdslCompiler().compile(parsingResult.get)
+      HdslCompiler.compile(parsingResult.get)
     }
   }
 
@@ -28,7 +28,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
     intercept[RuntimeException] {
-      new HdslCompiler().compile(parsingResult.get)
+      HdslCompiler.compile(parsingResult.get)
     }
   }
 
@@ -41,7 +41,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
     intercept[RuntimeException] {
-      new HdslCompiler().compile(parsingResult.get)
+      HdslCompiler.compile(parsingResult.get)
     }
   }
 
@@ -53,7 +53,7 @@ class SignalCompilationUnitTest extends UnitSpec {
       """.stripMargin
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
-    new HdslCompiler().compile(parsingResult.get)
+    HdslCompiler.compile(parsingResult.get)
   }
 
   test("That multiple declarations of the same SignalClass cause exception") {
@@ -66,7 +66,7 @@ class SignalCompilationUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow, wf)
     assert(parsingResult.successful)
     intercept[RuntimeException] {
-      new HdslCompiler().compile(parsingResult.get)
+      HdslCompiler.compile(parsingResult.get)
     }
   }
 

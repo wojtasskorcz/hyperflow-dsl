@@ -20,7 +20,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream("/comet.hdsl")))
     assert(parsingResult.successful)
-    val outMap = new HdslCompiler().compile(parsingResult.get)
+    val outMap = HdslCompiler.compile(parsingResult.get)
     val json = parse(write(outMap))
 
     // signals test
@@ -101,7 +101,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream("/comet_arrays.hdsl")))
     assert(parsingResult.successful)
-    val outMap = new HdslCompiler().compile(parsingResult.get)
+    val outMap = HdslCompiler.compile(parsingResult.get)
     val json = parse(write(outMap))
 
     // signals test

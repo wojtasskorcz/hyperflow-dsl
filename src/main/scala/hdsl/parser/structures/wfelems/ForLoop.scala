@@ -55,7 +55,7 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
       val loopVarInstance = typeMap(s"$array[$index]")
       typeMap += loopVar -> loopVarInstance
       Wf.variables += loopIdx -> index
-      HdslCompiler.prepareDataStructures(wfElems)
+      HdslCompiler.secondPass(wfElems)
     })
   }
 

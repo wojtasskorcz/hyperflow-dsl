@@ -1,8 +1,16 @@
 package hdsl.test
 
-import org.scalatest.FunSuite
+import hdsl.compiler.structures.Wf
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
-abstract class UnitSpec extends FunSuite with MockitoSugar {
+/**
+ * Always mix in BeforeAndAfterEach as the last trait!
+ */
+abstract class UnitSpec extends FunSuite with MockitoSugar with BeforeAndAfterEach {
+
+  override def beforeEach: Unit = {
+    Wf.init()
+  }
 
 }

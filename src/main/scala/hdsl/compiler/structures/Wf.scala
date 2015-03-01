@@ -1,8 +1,5 @@
 package hdsl.compiler.structures
 
-import hdsl.MutableMap
-import hdsl.parser.structures.DotNotationAccessor
-import hdsl.parser.structures.rhs.Expr
 import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
 
 import scala.collection.mutable
@@ -25,6 +22,7 @@ object Wf {
     visibleProcessInstances.clear()
     allSignalInstances.clear()
     allProcessInstances.clear()
+    variables.clear()
     anonymousElemCounter = 1
   }
 
