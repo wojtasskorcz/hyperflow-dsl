@@ -26,7 +26,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
 
   override def putInstanceOnlyToVisible(visibleName: String): Unit =  Wf.visibleProcessInstances += visibleName -> this
 
-  override def putInstanceToVisibleAndAll(visibleName: String): Unit =  Wf.putProcessInstance(visibleName, this)
+  override def putInstanceToVisibleAndAll(visibleName: String): Unit =  Wf.putProcessInstance(visibleName -> this)
 
   def toMap: MutableMap[String, Any] = {
     val outMap = mutable.Map[String, Any]("name" -> name, "function" -> processClass.invocation.name)

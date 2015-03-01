@@ -31,19 +31,12 @@ object HdslCompiler {
    */
   private def firstPass(wfElems: List[WfElem]): List[WfElem] = {
     val wfElemsAfterFirstPass = wfElems.map({
-      case WfElemAssignment(lhs, rhs: SignalInstantiation) if rhs.arrayAccessor != null => {
+      case WfElemAssignment(lhs, rhs: Instantiation) if rhs.arrayAccessor != null => {
         val arraySize = rhs.arrayAccessor.evaluate
         if (!arraySize.isInstanceOf[Int]) {
           throw new RuntimeException(s"Cannot declare array of ${rhs.className} as the index expression doesn't evaluate to an integer")
         }
-        WfElemAssignment(lhs, SignalInstantiation(rhs.className, rhs.args, Expr(arraySize)))
-      }
-      case WfElemAssignment(lhs, rhs: ProcessInstantiation) if rhs.arrayAccessor != null => {
-        val arraySize = rhs.arrayAccessor.evaluate
-        if (!arraySize.isInstanceOf[Int]) {
-          throw new RuntimeException(s"Cannot declare array of ${rhs.className} as the index expression doesn't evaluate to an integer")
-        }
-        WfElemAssignment(lhs, ProcessInstantiation(rhs.className, Expr(arraySize)))
+        WfElemAssignment(lhs, rhs.changedArrayCopy(Expr(arraySize)))
       }
       case VarAssignment(varName, rhs: Expr) => {
         Wf.putVariable(varName -> rhs.evaluate)
@@ -57,7 +50,6 @@ object HdslCompiler {
   }
 
   def prepareDataStructures(wfElems: List[WfElem]): Unit = {
-
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
@@ -87,7 +79,7 @@ object HdslCompiler {
 
       0 until instantiation.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
         val arrayElemName = DotNotationAccessor(List(instanceName, Expr(index))).stringify
-        val arrayElemInstance = instance.instantiation.arraylessCopy.prepareInstance(arrayElemName)
+        val arrayElemInstance = instance.instantiation.changedArrayCopy(null).prepareInstance(arrayElemName)
         arrayElemInstance.putInstanceToVisibleAndAll(arrayElemName)
       })
     }

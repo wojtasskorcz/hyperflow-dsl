@@ -1,12 +1,12 @@
 package hdsl.parser.structures.traits
 
-import hdsl.parser.structures.rhs.Expr
+import hdsl.parser.structures.rhs.{Rhs, Expr}
 
-trait Instantiation {
+trait Instantiation extends Rhs {
 
   def className: String
   def arrayAccessor: Expr
-  def arraylessCopy: Instantiation
+  def changedArrayCopy(newArrayAccessor: Expr): Instantiation
   def prepareInstance(name: String): Instantiated
 
 }

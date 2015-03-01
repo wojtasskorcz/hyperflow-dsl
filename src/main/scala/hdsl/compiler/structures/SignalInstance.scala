@@ -34,7 +34,7 @@ case class SignalInstance(name: String, instantiation: SignalInstantiation) exte
 
   override def putInstanceOnlyToVisible(visibleName: String): Unit =  Wf.visibleSignalInstances += visibleName -> this
 
-  override def putInstanceToVisibleAndAll(visibleName: String): Unit =  Wf.putSignalInstance(visibleName, this)
+  override def putInstanceToVisibleAndAll(visibleName: String): Unit =  Wf.putSignalInstance(visibleName -> this)
 
   def toMap: MutableMap[String, Any] = {
 
