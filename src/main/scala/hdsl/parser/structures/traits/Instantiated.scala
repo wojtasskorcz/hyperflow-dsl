@@ -4,5 +4,7 @@ trait Instantiated {
 
   def name: String
   def instantiation: Instantiation
+  def putInstanceOnlyToVisible(visibleName: String): Unit
+  def putInstanceToVisibleAndAll(visibleName: String): Unit
 
 }

@@ -7,5 +7,6 @@ trait Instantiation {
   def className: String
   def arrayAccessor: Expr
   def arraylessCopy: Instantiation
+  def prepareInstance(name: String): Instantiated
 
 }
