@@ -1,6 +1,7 @@
 package hdsl.compiler.structures
 
 import hdsl._
+import hdsl.parser.structures.Arg
 import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation}
 import hdsl.parser.structures.traits.{Instantiated, PropertyContainer}
 import hdsl.parser.structures.wfelems.{SignalClass, ProcessClass}
@@ -23,6 +24,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
 
   val ins = mutable.MutableList.empty[String]
   val outs = mutable.MutableList.empty[String]
+  val sticky = mutable.MutableList.empty[String]
 
   override def putInstanceOnlyToVisible(visibleName: String): Unit =  Wf.visibleProcessInstances += visibleName -> this
 
@@ -33,6 +35,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
     outMap ++= resolvedPropertiesMap()
     outMap += "ins" -> ins
     outMap += "outs" -> outs
+    outMap += "sticky" -> sticky
     outMap
   }
 
@@ -40,8 +43,12 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
     if (ins.size == processClass.args.size) {
       throw new RuntimeException(s"Cannot add signal ${signal.name} as input to process ${name}. Too many inputs.")
     }
-    if (signal.signalClass.name != processClass.args(ins.size).argType) {
-      throw new RuntimeException(s"Input number ${ins.size} of process $name is of type ${processClass.args(ins.size).argType} cannot be set to signal ${signal.name} of class ${signal.signalClass.name}")
+    val inputArg = processClass.args(ins.size)
+    if (signal.signalClass.name != inputArg.argType) {
+      throw new RuntimeException(s"Input number ${ins.size} of process $name is of type ${inputArg.argType} cannot be set to signal ${signal.name} of class ${signal.signalClass.name}")
+    }
+    if (inputArg.modifiers.contains("sticky")) {
+      sticky += signal.name
     }
     ins += signal.name + suffix
   }

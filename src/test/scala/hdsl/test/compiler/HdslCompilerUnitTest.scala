@@ -75,6 +75,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     } yield process)(0))
 
     assertEquals(List("dataParts", "config"), (computeStats \ "ins").values)
+    assertEquals(List("config"), (computeStats \ "sticky").values)
     assertEquals(List("stats"), (computeStats \ "outs").values)
     ensureSignal("stats", json)
 
@@ -176,6 +177,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     var computeStatsOuts = List[String]()
     for ((p, idx) <- computeStats.view.zipWithIndex.force) {
       assertEquals(List(partitionDatasOuts(idx), "config"), (p \ "ins").values)
+      assertEquals(List("config"), (p \ "sticky").values)
       val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
       assertEquals(1, pOuts.length)
       ensureSignal(pOuts(0), json)

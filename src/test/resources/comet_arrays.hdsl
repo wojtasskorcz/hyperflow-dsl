@@ -3,7 +3,7 @@ signal Config(xpath: String, start_time: String, end_time: String, baseTemp: Str
 signal Stations()
 signal DataParts()
 
-process ReadDataSets(x: XmlData, c: sticky Config): Stations {
+process ReadDataSets(x: XmlData, c: Config): Stations {
   config.args = "someArgs"
   config.constantArgs = "constantArgs"
   genXmlCollection(x, c)
