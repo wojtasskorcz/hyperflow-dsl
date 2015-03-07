@@ -93,9 +93,11 @@ object HdslParser extends JavaTokenParsers {
 
   def arrayAccessor: Parser[Expr] = "[" ~> expr <~ "]"
 
-  def composition: Parser[Composition] = compositionElem ~ "->" ~ rep1sep(compositionElem, "->") ^^ {
-    case elem ~ "->" ~ elems => Composition(List(elem) ++ elems)
+  def composition: Parser[Composition] = compositionElem ~ rep1(conjunctedElem) ^^ {
+    case elem ~ conjsAndElems => Composition(elem :: conjsAndElems.map(_._2), conjsAndElems.map(_._1))
   }
+
+  def conjunctedElem: Parser[(Conjunction, CompositionElem)] = conjunction ~ compositionElem ^^ {case conj ~ elem => (conj, elem)}
 
   def compositionElem: Parser[CompositionElem] = dotNotationPath ~ opt(":" ~> dotNotationPath) ^^ {
     case primaryPath ~ additionalPath => CompositionElem(List(primaryPath), additionalPath.orNull)
@@ -103,6 +105,10 @@ object HdslParser extends JavaTokenParsers {
     "(" ~> rep1sep(dotNotationPath, ",") <~ ")" ^^ {
       case primaryPaths => CompositionElem(primaryPaths, null)
     }
+
+  def conjunction: Parser[Conjunction] = "->" ^^ {case _ => Arrow} |
+    "-|>" ^^ {case _ => JoinArrow} |
+    "-|" ~> wholeNumber <~ ">" ^^ {case num => PartialJoinArrow(num.toInt)}
 
   def dotNotationPath: Parser[DotNotationAccessor] = ident ~ rep("." ~> ident | arrayAccessor) ^^ {
     case base ~ properties => DotNotationAccessor(base :: properties)

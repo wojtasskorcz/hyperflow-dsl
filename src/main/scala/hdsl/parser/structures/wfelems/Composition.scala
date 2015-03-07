@@ -2,19 +2,19 @@ package hdsl.parser.structures.wfelems
 
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 import hdsl.parser.structures.rhs.{ProcessInstantiation, SignalInstantiation}
-import hdsl.parser.structures.{CompositionElem, DotNotationAccessor}
+import hdsl.parser.structures.{Conjunction, Arrow, CompositionElem, DotNotationAccessor}
 
 import scala.collection.mutable
 
-case class Composition(elems: List[CompositionElem]) extends WfElem {
+case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) extends WfElem {
 
   private val tmpProcesses = mutable.Map.empty[String, ProcessInstance]
 
   def compose() = {
-    // for each pair of adjacent composition elements
-    elems zip elems.tail foreach {
-      case (from, to) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
-      case (from, to) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to)
+    // for each pair of adjacent composition elements and their conjunction operator
+    (elems, elems.tail, conjs).zipped.toList foreach {
+      case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
+      case (from, to, Arrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to)
       case x => throw new RuntimeException("TODO " + x)
     }
   }
