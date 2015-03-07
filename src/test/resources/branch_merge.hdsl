@@ -1,0 +1,17 @@
+process Echo(in) {
+  echo(in)
+}
+
+process GenerateBranches(): (Signal, Signal, Signal) {
+  generateBranches()
+}
+
+process GatherBranches(b1, b2, b3) {
+  gatherBranches()
+}
+
+//GenerateBranches -|> (branch1, branch2, branch3)
+branch1 -> Echo -> outBranch1
+branch2 -> Echo -> outBranch2
+branch3 -> Echo -> outBranch3
+//(outBranch1, outBranch2, outBranch3) -|> GatherBranches

@@ -95,7 +95,10 @@ case class Composition(elems: List[CompositionElem]) extends WfElem {
   }
 
   private def createOutputSignal(signalName: String, processInstance: ProcessInstance): SignalInstance = {
-    val signalClass = processInstance.getOutSignalClass
+    val signalClass = processInstance.getNextOutSignalClass match {
+      case Some(signalClass) => signalClass
+      case None => throw new RuntimeException(s"Cannot add another out signal ($signalName) to process ${processInstance.name}")
+    }
     if (signalClass.args.nonEmpty) {
       throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} because the class takes arguments")
     }

@@ -54,15 +54,14 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   }
 
   def addOutput(signal: SignalInstance) = {
-    if (outs.nonEmpty) {
+    if (outs.size >= processClass.returnTypes.size) {
       throw new RuntimeException(s"Cannot add another output signal ${signal.name} to process $name")
-    }
-    if (processClass.returnType == "Unit") {
-      throw new RuntimeException(s"Cannot add output signal ${signal.name} to process $name that returns 'Unit'")
     }
     outs += signal.name
   }
 
-  def getOutSignalClass: SignalClass = Wf.signalClasses(processClass.returnType)
+  def getNextOutSignalClass: Option[SignalClass] =
+    if (outs.size >= processClass.returnTypes.size) None
+    else Some(Wf.signalClasses(processClass.returnTypes(outs.size)))
 
 }
