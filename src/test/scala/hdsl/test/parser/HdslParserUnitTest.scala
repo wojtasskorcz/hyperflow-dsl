@@ -19,6 +19,10 @@ class HdslParserUnitTest extends UnitSpec {
     testParsing("/branch_merge.hdsl")
   }
 
+  test("branch_static workflow should be accepted by the parser") {
+    testParsing("/branch_static.hdsl")
+  }
+
   private def testParsing(filename: String) = {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream(filename)))
