@@ -235,8 +235,37 @@ class HdslCompilerUnitTest extends UnitSpec {
       JField("function", JString("generateBranches")) <- process
     } yield process)(0))
 
-    assertEquals(4, (generateBranches \ "outs").values.asInstanceOf[List[String]].size)
-    assertEquals(List("branch1", "branch2", "branch3"), (generateBranches \ "outs").values.asInstanceOf[List[String]].take(3))
+    val generateBranchesOuts = (generateBranches \ "outs").values.asInstanceOf[List[String]]
+    assertEquals(4, generateBranchesOuts.size)
+    assertEquals(List("branch1", "branch2", "branch3"), generateBranchesOuts.take(3))
+    List("branch1", "branch2", "branch3").foreach(signal => ensureSignal(signal, json))
+    val mergeSignalName = generateBranchesOuts(3)
+    ensureSignal(mergeSignalName, json)
+    assertEquals("choice", (generateBranches \ "type").values)
+
+    val echos: List[JObject] = (for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("echo")) <- process
+    } yield process).map(new JObject(_))
+
+    for ((p, idx) <- echos.view.zipWithIndex.force) {
+      assertEquals(List(s"branch${idx+1}"), (p \ "ins").values)
+      assertEquals(List(s"outBranch${idx+1}"), (p \ "outs").values)
+      assertEquals("dataflow", (p \ "type").values)
+      ensureSignal(s"outBranch${idx+1}", json)
+    }
+    assertEquals(3, echos.map(p => (p \ "name").values).distinct.size)
+
+    val gatherBranches = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("gatherBranches")) <- process
+    } yield process)(0))
+
+    val gatherBranchesIns = (gatherBranches \ "ins").values.asInstanceOf[List[String]]
+    assertEquals(4, gatherBranchesIns.size)
+    assertEquals(List("outBranch1", "outBranch2", "outBranch3"), gatherBranchesIns.take(3))
+    assertEquals(mergeSignalName, gatherBranchesIns(3))
+    assertEquals("join", (gatherBranches \ "type").values)
   }
 
   private def ensureSignal(name: String, json: JValue) = {

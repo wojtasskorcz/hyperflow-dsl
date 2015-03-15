@@ -80,6 +80,7 @@ object HdslCompiler {
 
     def connectWithMerge(from: ProcessInstance, to: ProcessInstance) = {
       val mergeSignal = SignalInstance(Wf.getNextAnonymousName, SignalInstantiation(mergeSignalClassName, Nil, null))
+      Wf.allSignalInstances += mergeSignal
       from.addOutput(mergeSignal)
       to.addInput(mergeSignal)
     }
