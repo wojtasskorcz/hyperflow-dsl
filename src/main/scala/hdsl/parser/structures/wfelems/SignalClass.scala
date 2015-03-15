@@ -10,4 +10,6 @@ case class SignalClass(name: String, args: List[Arg]) extends AnyRef with WfElem
   // SignalClasses must have an explicit type on all arguments
   require(args.forall(arg => arg.argType != null))
 
+  var control: Option[String] = None
+
 }

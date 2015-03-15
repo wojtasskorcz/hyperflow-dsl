@@ -1,9 +1,9 @@
 package hdsl.compiler
 
 import hdsl.MutableMap
-import hdsl.compiler.structures.Wf
+import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 import hdsl.parser.structures.DotNotationAccessor
-import hdsl.parser.structures.rhs.Expr
+import hdsl.parser.structures.rhs.{SignalInstantiation, Expr}
 import hdsl.parser.structures.traits.Instantiation
 import hdsl.parser.structures.wfelems._
 
@@ -11,11 +11,21 @@ import scala.collection.mutable
 
 object HdslCompiler {
 
+  val mergeSignalClassName = "$ControlMerge"
+
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
+    createPredefs()
+    val wfElemsAfterFirstPass = firstPass(wfElems)
+    secondPass(wfElemsAfterFirstPass)
+    thirdPass()
+    generateOutput()
+  }
+
+  private def createPredefs() = {
     Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
-    val wfElemsAfterFirstPass = HdslCompiler.firstPass(wfElems)
-    HdslCompiler.secondPass(wfElemsAfterFirstPass)
-    HdslCompiler.generateOutput()
+    val mergeSignalClass = SignalClass(mergeSignalClassName, Nil)
+    mergeSignalClass.control = Some("merge")
+    Wf.putSignalClass(mergeSignalClassName -> mergeSignalClass)
   }
 
   /**
@@ -44,6 +54,15 @@ object HdslCompiler {
   }
 
   def secondPass(wfElems: List[WfElem]): Unit = {
+
+    def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
+      Wf.visibleProcessInstances.get(accessor.getBase()) match {
+        case Some(processInstance) => processInstance.setProperty(accessor.getResolvedProperties(), rhs)
+        case None => throw new RuntimeException(
+          s"cannot set property ${accessor.getResolvedProperties()} as ${accessor.getBase()} is not defined")
+      }
+    }
+
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
@@ -57,12 +76,20 @@ object HdslCompiler {
     })
   }
 
-  private def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
-    Wf.visibleProcessInstances.get(accessor.getBase()) match {
-      case Some(processInstance) => processInstance.setProperty(accessor.getResolvedProperties(), rhs)
-      case None => throw new RuntimeException(
-        s"cannot set property ${accessor.getResolvedProperties()} as ${accessor.getBase()} is not defined")
+  private def thirdPass(): Unit = {
+
+    def connectWithMerge(from: ProcessInstance, to: ProcessInstance) = {
+      val mergeSignal = SignalInstance(Wf.getNextAnonymousName, SignalInstantiation(mergeSignalClassName, Nil, null))
+      from.addOutput(mergeSignal)
+      to.addInput(mergeSignal)
     }
+
+    Wf.allProcessInstances.filter(_.processType == "join").foreach(processInstance => {
+      processInstance.partialJoinNum match {
+        case Some(num) => throw new RuntimeException("TODO")
+        case None => connectWithMerge(processInstance.choiceSource.get, processInstance)
+      }
+    })
   }
 
   private def generateOutput(): MutableMap[String, Any] = {

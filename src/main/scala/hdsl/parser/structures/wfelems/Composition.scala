@@ -13,14 +13,15 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
   def compose() = {
     // for each pair of adjacent composition elements and their conjunction operator
     (elems, elems.tail, conjs).zipped.toList foreach {
-      case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
+      case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from, false)
       case (from, to, Arrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, false)
+      case (from, to, JoinArrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from, true)
       case (from, to, JoinArrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, true)
       case x => throw new RuntimeException("TODO " + x)
     }
   }
 
-  private def setInputs(processElem: CompositionElem, signalElem: CompositionElem) = {
+  private def setInputs(processElem: CompositionElem, signalElem: CompositionElem, unmarkChoiceSource: Boolean) = {
     val processInstance = processElem match {
       case CompositionElem(List(DotNotationAccessor(List(processName: String))), null) =>
         Wf.visibleProcessInstances.get(processName) match {
@@ -32,12 +33,16 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
         }
     }
 
+    if (unmarkChoiceSource) {
+      processInstance.processType = "join"
+    }
+
     signalElem match {
       case CompositionElem(List(signalName), DotNotationAccessor(parts)) if parts.last == "count" => {
         val countSignal = createCountSignal(DotNotationAccessor(parts.dropRight(1)).stringify)
         processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify), s":${countSignal.name}")
       }
-      case CompositionElem(signalNames, _) => signalNames.foreach(
+      case CompositionElem(signalNames, null) => signalNames.foreach(
         signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify))
       )
     }
@@ -84,6 +89,10 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
           case None => throw new RuntimeException(s"Could not find process $processName to set its output")
         }
       }
+    }
+
+    if (markChoiceSource) {
+      processInstance.processType = "choice"
     }
 
     signalElem match {
