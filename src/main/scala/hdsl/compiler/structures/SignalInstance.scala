@@ -18,6 +18,12 @@ case class SignalInstance(name: String, instantiation: SignalInstantiation) exte
     case None => throw new RuntimeException(s"Cannot instantiate signal $name. Signal class ${instantiation.className} not found")
   }
 
+  /**
+   * If this signal derives from a choice process, we reference this process instance here, so subsequent signals in
+   * the workflow may inherit this reference and know their original choice-source
+   */
+  var choiceSource: Option[ProcessInstance] = None
+
   checkArgsCompatibility()
 
   private def checkArgsCompatibility() = {

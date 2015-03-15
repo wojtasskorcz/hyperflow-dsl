@@ -2,7 +2,7 @@ package hdsl.parser.structures.wfelems
 
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 import hdsl.parser.structures.rhs.{ProcessInstantiation, SignalInstantiation}
-import hdsl.parser.structures.{Conjunction, Arrow, CompositionElem, DotNotationAccessor}
+import hdsl.parser.structures._
 
 import scala.collection.mutable
 
@@ -14,7 +14,8 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     // for each pair of adjacent composition elements and their conjunction operator
     (elems, elems.tail, conjs).zipped.toList foreach {
       case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
-      case (from, to, Arrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to)
+      case (from, to, Arrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, false)
+      case (from, to, JoinArrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, true)
       case x => throw new RuntimeException("TODO " + x)
     }
   }
@@ -74,7 +75,7 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     signalInstance
   }
 
-  private def setOutputs(processElem: CompositionElem, signalElem: CompositionElem): Unit = {
+  private def setOutputs(processElem: CompositionElem, signalElem: CompositionElem, markChoiceSource: Boolean): Unit = {
     val processInstance = processElem match {
       case CompositionElem(List(processName), null) => Wf.visibleProcessInstances.get(processName.getBase()) match {
         case Some(instance) => instance
@@ -86,11 +87,13 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     }
 
     signalElem match {
-      case CompositionElem(signalNames, _) => signalNames.foreach(signalName =>
-        Wf.visibleSignalInstances.get(signalName.stringify) match {
-          case Some(signalInstance) => processInstance.addOutput(signalInstance)
-          case None => processInstance.addOutput(createOutputSignal(signalName.stringify, processInstance))
-        })
+      case CompositionElem(signalNames, _) => signalNames.foreach(signalName => {
+        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringify, createOutputSignal(signalName.stringify, processInstance))
+        processInstance.addOutput(signalInstance)
+        if (markChoiceSource) {
+          signalInstance.choiceSource = Some(processInstance)
+        }
+      })
     }
   }
 
