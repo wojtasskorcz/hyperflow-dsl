@@ -223,6 +223,22 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(n, collectPlots.map(p => (p \ "ins")(0).values).distinct.size)
   }
 
+  test("That branch_merge workflow is properly compiled") {
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
+      new InputStreamReader(getClass.getResourceAsStream("/branch_merge.hdsl")))
+    assert(parsingResult.successful)
+    val outMap = HdslCompiler.compile(parsingResult.get)
+    val json = parse(write(outMap))
+
+    val generateBranches = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("generateBranches")) <- process
+    } yield process)(0))
+
+    assertEquals(4, (generateBranches \ "outs").values.asInstanceOf[List[String]].size)
+    assertEquals(List("branch1", "branch2", "branch3"), (generateBranches \ "outs").values.asInstanceOf[List[String]].take(3))
+  }
+
   private def ensureSignal(name: String, json: JValue) = {
     (for {
       JObject(signal) <- json \ "signals"

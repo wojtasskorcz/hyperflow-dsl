@@ -21,7 +21,8 @@ case class CompositionElem(primaryPaths: List[DotNotationAccessor], additional: 
   }
 
   def isProcessElem(tmpProcesses: MutableMap[String, ProcessInstance]) = {
-    primaryPaths.forall(path => Wf.visibleProcessInstances.contains(path.stringify) || tmpProcesses.contains(path.stringify))
+    primaryPaths.forall(path => Wf.visibleProcessInstances.contains(path.stringify)
+      || Wf.processClasses.contains(path.stringify) || tmpProcesses.contains(path.stringify))
   }
 
 }

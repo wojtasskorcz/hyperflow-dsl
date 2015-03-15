@@ -82,11 +82,14 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
 
   private def setOutputs(processElem: CompositionElem, signalElem: CompositionElem, markChoiceSource: Boolean): Unit = {
     val processInstance = processElem match {
-      case CompositionElem(List(processName), null) => Wf.visibleProcessInstances.get(processName.getBase()) match {
+      case CompositionElem(List(DotNotationAccessor(List(processName: String))), null) => Wf.visibleProcessInstances.get(processName) match {
         case Some(instance) => instance
-        case None => tmpProcesses.get(processName.getBase()) match {
+        case None => tmpProcesses.get(processName) match {
           case Some(instance) => instance
-          case None => throw new RuntimeException(s"Could not find process $processName to set its output")
+          case None => Wf.processClasses.get(processName) match {
+            case Some(processClass) => createAnonymousProcess(processClass)
+            case None => throw new RuntimeException(s"Could not find process instance nor process class named $processName")
+          }
         }
       }
     }
