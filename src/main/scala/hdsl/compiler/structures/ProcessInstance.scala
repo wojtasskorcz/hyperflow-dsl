@@ -27,7 +27,8 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   val sticky = mutable.MutableList.empty[String]
   var choiceSource: Option[ProcessInstance] = None
   var processType = "dataflow"
-  var partialJoinNum: Option[Int] = None
+  var joinCount: Option[Int] = None
+  var activeBranchesCount: Option[Int] = None
 
   override def putInstanceOnlyToVisible(visibleName: String): Unit =  Wf.visibleProcessInstances += visibleName -> this
 
@@ -40,6 +41,10 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
     outMap += "ins" -> ins
     outMap += "outs" -> outs
     outMap += "sticky" -> sticky
+    if (joinCount.nonEmpty) {
+      outMap += "joinCount" -> joinCount.get
+      outMap += "activeBranchesCount" -> activeBranchesCount.get
+    }
     outMap
   }
 
@@ -85,5 +90,10 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   def getNextOutSignalClass: Option[SignalClass] =
     if (outs.size >= processClass.returnTypes.size) None
     else Some(Wf.signalClasses(processClass.returnTypes(outs.size)))
+
+  def computeActiveBranchesCount() = {
+    activeBranchesCount = Some(Wf.allSignalInstances.count(
+      signalInstance => ins.contains(signalInstance.name) && signalInstance.choiceSource == choiceSource))
+  }
 
 }

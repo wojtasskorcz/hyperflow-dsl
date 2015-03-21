@@ -11,17 +11,32 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
   private val tmpProcesses = mutable.Map.empty[String, ProcessInstance]
 
   def compose() = {
+
+    def setJoinProcess(processInstance: ProcessInstance) = {
+      processInstance.processType = "join"
+    }
+
+    def createSetPartialJoinProcess(num: Int): ProcessInstance => Unit = {
+      (processInstance: ProcessInstance) => {
+        processInstance.processType = "join"
+        processInstance.joinCount = Some(num)
+      }
+    }
+
     // for each pair of adjacent composition elements and their conjunction operator
     (elems, elems.tail, conjs).zipped.toList foreach {
-      case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from, false)
+      case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
       case (from, to, Arrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, false)
-      case (from, to, JoinArrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from, true)
+      case (from, to, JoinArrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from, setJoinProcess)
       case (from, to, JoinArrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, true)
+      case (from, to, PartialJoinArrow(num)) if from.isSignalElem() || to.isProcessElem(tmpProcesses) =>
+        setInputs(to, from, createSetPartialJoinProcess(num))
       case x => throw new RuntimeException("TODO " + x)
     }
   }
 
-  private def setInputs(processElem: CompositionElem, signalElem: CompositionElem, unmarkChoiceSource: Boolean) = {
+  private def setInputs(processElem: CompositionElem, signalElem: CompositionElem,
+                        modifyProcess: ProcessInstance => Unit = _ => Unit) = {
     val processInstance = processElem match {
       case CompositionElem(List(DotNotationAccessor(List(processName: String))), null) =>
         Wf.visibleProcessInstances.get(processName) match {
@@ -33,9 +48,7 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
         }
     }
 
-    if (unmarkChoiceSource) {
-      processInstance.processType = "join"
-    }
+    modifyProcess(processInstance)
 
     signalElem match {
       case CompositionElem(List(signalName), DotNotationAccessor(parts)) if parts.last == "count" => {

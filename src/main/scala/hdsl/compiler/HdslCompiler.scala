@@ -86,8 +86,8 @@ object HdslCompiler {
     }
 
     Wf.allProcessInstances.filter(_.processType == "join").foreach(processInstance => {
-      processInstance.partialJoinNum match {
-        case Some(num) => throw new RuntimeException("TODO")
+      processInstance.joinCount match {
+        case Some(num) => processInstance.computeActiveBranchesCount()
         case None => connectWithMerge(processInstance.choiceSource.get, processInstance)
       }
     })

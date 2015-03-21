@@ -266,6 +266,50 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(List("outBranch1", "outBranch2", "outBranch3"), gatherBranchesIns.take(3))
     assertEquals(mergeSignalName, gatherBranchesIns(3))
     assertEquals("join", (gatherBranches \ "type").values)
+    assertEquals(None, (gatherBranches \ "joinCount").values)
+    assertEquals(None, (gatherBranches \ "activeBranchesCount").values)
+  }
+
+  test("That branch_static workflow is properly compiled") {
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
+      new InputStreamReader(getClass.getResourceAsStream("/branch_static.hdsl")))
+    assert(parsingResult.successful)
+    val outMap = HdslCompiler.compile(parsingResult.get)
+    val json = parse(write(outMap))
+
+    val generateBranches = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("generateBranches")) <- process
+    } yield process)(0))
+
+    val generateBranchesOuts = (generateBranches \ "outs").values.asInstanceOf[List[String]]
+    assertEquals(List("branch1", "branch2", "branch3"), generateBranchesOuts)
+    generateBranchesOuts.foreach(signal => ensureSignal(signal, json))
+    assertEquals("choice", (generateBranches \ "type").values)
+
+    val echos: List[JObject] = (for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("echo")) <- process
+    } yield process).map(new JObject(_))
+
+    for ((p, idx) <- echos.view.zipWithIndex.force) {
+      assertEquals(List(s"branch${idx+1}"), (p \ "ins").values)
+      assertEquals(List(s"outBranch${idx+1}"), (p \ "outs").values)
+      assertEquals("dataflow", (p \ "type").values)
+      ensureSignal(s"outBranch${idx+1}", json)
+    }
+    assertEquals(3, echos.map(p => (p \ "name").values).distinct.size)
+
+    val gatherBranches = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("gatherBranches")) <- process
+    } yield process)(0))
+
+    val gatherBranchesIns = (gatherBranches \ "ins").values.asInstanceOf[List[String]]
+    assertEquals(List("outBranch1", "outBranch2", "outBranch3"), gatherBranchesIns)
+    assertEquals("join", (gatherBranches \ "type").values)
+    assertEquals(BigInt(2), (gatherBranches \ "joinCount").values)
+    assertEquals(BigInt(3), (gatherBranches \ "activeBranchesCount").values)
   }
 
   private def ensureSignal(name: String, json: JValue) = {
