@@ -108,7 +108,8 @@ object HdslParser extends JavaTokenParsers {
 
   def conjunction: Parser[Conjunction] = "->" ^^ {case _ => Arrow} |
     "-|>" ^^ {case _ => JoinArrow} |
-    "-|" ~> wholeNumber <~ ">" ^^ {case num => PartialJoinArrow(num.toInt)}
+    "-|" ~> wholeNumber <~ ">" ^^ {case num => PartialJoinArrow(num.toInt)} |
+    "-||" ~> wholeNumber <~ ">" ^^ {case num => BlockingPartialJoinArrow(num.toInt)}
 
   def dotNotationPath: Parser[DotNotationAccessor] = ident ~ rep("." ~> ident | arrayAccessor) ^^ {
     case base ~ properties => DotNotationAccessor(base :: properties)

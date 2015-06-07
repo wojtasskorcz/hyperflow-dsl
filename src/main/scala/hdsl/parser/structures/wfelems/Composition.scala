@@ -23,6 +23,14 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
       }
     }
 
+    def createSetBlockingPartialJoinProcess(num: Int): ProcessInstance => Unit = {
+      (processInstance: ProcessInstance) => {
+        processInstance.processType = "join"
+        processInstance.joinCount = Some(num)
+        processInstance.isBlockingJoin = true
+      }
+    }
+
     // for each pair of adjacent composition elements and their conjunction operator
     (elems, elems.tail, conjs).zipped.toList foreach {
       case (from, to, Arrow) if from.isSignalElem() || to.isProcessElem(tmpProcesses) => setInputs(to, from)
@@ -31,6 +39,8 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
       case (from, to, JoinArrow) if from.isProcessElem(tmpProcesses) || to.isSignalElem() => setOutputs(from, to, true)
       case (from, to, PartialJoinArrow(num)) if from.isSignalElem() || to.isProcessElem(tmpProcesses) =>
         setInputs(to, from, createSetPartialJoinProcess(num))
+      case (from, to, BlockingPartialJoinArrow(num)) if from.isSignalElem() || to.isProcessElem(tmpProcesses) =>
+        setInputs(to, from, createSetBlockingPartialJoinProcess(num))
       case x => throw new RuntimeException("TODO " + x)
     }
   }

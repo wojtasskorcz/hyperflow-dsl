@@ -12,6 +12,7 @@ import scala.collection.mutable
 object HdslCompiler {
 
   val mergeSignalClassName = "$ControlMerge"
+  val nextSignalClassName = "$ControlNext"
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
     createPredefs()
@@ -23,9 +24,14 @@ object HdslCompiler {
 
   private def createPredefs() = {
     Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
+
     val mergeSignalClass = SignalClass(mergeSignalClassName, Nil)
     mergeSignalClass.control = Some("merge")
     Wf.putSignalClass(mergeSignalClassName -> mergeSignalClass)
+
+    val nextSignalClass = SignalClass(nextSignalClassName, Nil)
+    nextSignalClass.control = Some("next")
+    Wf.putSignalClass(nextSignalClassName -> nextSignalClass)
   }
 
   /**
@@ -78,17 +84,22 @@ object HdslCompiler {
 
   private def thirdPass(): Unit = {
 
-    def connectWithMerge(from: ProcessInstance, to: ProcessInstance) = {
-      val mergeSignal = SignalInstance(Wf.getNextAnonymousName, SignalInstantiation(mergeSignalClassName, Nil, null))
-      Wf.allSignalInstances += mergeSignal
-      from.addOutput(mergeSignal)
-      to.addInput(mergeSignal)
+    def connectWithControlSignal(from: ProcessInstance, to: ProcessInstance, signalClassName: String): Unit = {
+      val signal = SignalInstance(Wf.getNextAnonymousName, SignalInstantiation(signalClassName, Nil, null))
+      Wf.allSignalInstances += signal
+      from.addOutput(signal)
+      to.addInput(signal)
     }
 
     Wf.allProcessInstances.filter(_.processType == "join").foreach(processInstance => {
       processInstance.joinCount match {
-        case Some(num) => processInstance.computeActiveBranchesCount()
-        case None => connectWithMerge(processInstance.choiceSource.get, processInstance)
+        case Some(num) => {
+          processInstance.computeActiveBranchesCount()
+          if (processInstance.isBlockingJoin) {
+            connectWithControlSignal(processInstance, processInstance.choiceSource.get, nextSignalClassName)
+          }
+        }
+        case None => connectWithControlSignal(processInstance.choiceSource.get, processInstance, mergeSignalClassName)
       }
     })
   }

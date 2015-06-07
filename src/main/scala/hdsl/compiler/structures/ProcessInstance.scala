@@ -28,6 +28,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   var choiceSource: Option[ProcessInstance] = None
   var processType = "dataflow"
   var joinCount: Option[Int] = None
+  var isBlockingJoin: Boolean = false
   var activeBranchesCount: Option[Int] = None
 
   override def putInstanceOnlyToVisible(visibleName: String): Unit =  Wf.visibleProcessInstances += visibleName -> this
