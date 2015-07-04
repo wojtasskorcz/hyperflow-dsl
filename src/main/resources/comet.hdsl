@@ -1,0 +1,34 @@
+signal XmlData(path: String)
+signal Config(xpath: String, start_time: String, end_time: String, baseTemp: String)
+signal Stations()
+signal DataParts()
+
+process ReadDataSets(x: XmlData, c: Config): Stations {
+  genXmlCollection(x, c)
+}
+
+process PartitionData(s: Stations): DataParts {
+  partitionData(s)
+}
+
+process ComputeStats(d: DataParts, c: sticky Config) {
+  parlevel = 3
+  computeStats(d, c)
+}
+
+process PlotGraphs(stats) {
+  parlevel = 3
+  plotData(stats)
+}
+
+process CollectPlots(graph): Unit {
+  collectGraphs(graph)
+}
+
+xmlData = new XmlData("data.xml")
+config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
+
+p = new ReadDataSets()
+
+(xmlData, config) -> p -> stations -> PartitionData -> dataParts
+(dataParts, config) -> ComputeStats -> stats -> PlotGraphs -> graph:stations.count -> CollectPlots
