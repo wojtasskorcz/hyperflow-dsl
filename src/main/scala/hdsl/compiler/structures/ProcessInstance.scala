@@ -41,7 +41,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
     outMap += "type" -> processType
     outMap += "ins" -> ins
     outMap += "outs" -> outs
-    outMap += "sticky" -> sticky
+    if (sticky.nonEmpty) outMap += "sticky" -> sticky
     if (joinCount.nonEmpty) {
       outMap += "joinCount" -> joinCount.get
       outMap += "activeBranchesCount" -> activeBranchesCount.get

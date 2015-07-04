@@ -135,6 +135,9 @@ object HdslCompiler {
     val outMap = mutable.Map.empty[String, Any]
     outMap += "processes" -> Wf.allProcessInstances.map(instance => instance.toMap)
     outMap += "signals" -> Wf.allSignalInstances.map(instance => instance.toMap)
+    // TODO implement workflow ins/outs handling
+    outMap += "ins" -> List()
+    outMap += "outs" -> List()
     outMap
   }
 

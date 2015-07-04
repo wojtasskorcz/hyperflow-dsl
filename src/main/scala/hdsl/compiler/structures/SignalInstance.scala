@@ -53,7 +53,7 @@ case class SignalInstance(name: String, instantiation: SignalInstantiation) exte
 
     val outMap = mutable.Map[String, Any]("name" -> name)
     if (signalClass.control.nonEmpty) outMap += "control" -> signalClass.control.get
-    outMap += "data" -> List(argumentsMap)
+    if (argumentsMap.nonEmpty) outMap += "data" -> List(argumentsMap)
     outMap
   }
 
