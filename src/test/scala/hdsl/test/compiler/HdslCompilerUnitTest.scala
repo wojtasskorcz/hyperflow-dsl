@@ -58,7 +58,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
     assertEquals("stations", pOutSignal)
     ensureSignal("stations", json)
-    ensureSignal(pCountSignalName, json)
+    ensureSignal(pCountSignalName, json, Map("control" -> new JString("count")))
 
     val partitionData = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -143,7 +143,7 @@ class HdslCompilerUnitTest extends UnitSpec {
       psOuts :+= pOutSignal
       psCounts :+= pCountSignalName
       ensureSignal(pOutSignal, json)
-      ensureSignal(pCountSignalName, json)
+      ensureSignal(pCountSignalName, json, Map("control" -> new JString("count")))
     })
 
     assertEquals(n, ps.size)

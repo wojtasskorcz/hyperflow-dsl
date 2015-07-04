@@ -1,5 +1,6 @@
 package hdsl.parser.structures.wfelems
 
+import hdsl.compiler.HdslCompiler
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 import hdsl.parser.structures.rhs.{ProcessInstantiation, SignalInstantiation}
 import hdsl.parser.structures._
@@ -86,7 +87,7 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
       throw new RuntimeException(s"Could not uniquely find a process, which could be the source of count signal $countSourceSignalName. Number of processes found: ${countSourceProcesses.length}")
     }
     val countSourceProcess = countSourceProcesses(0)
-    val signalInstance = createAnonymousSignal(Wf.signalClasses("Signal"))
+    val signalInstance = createAnonymousSignal(Wf.signalClasses(HdslCompiler.countSignalClassName))
     countSourceProcess.outs.transform(
       outSignal => if (outSignal == countSourceSignalName) s"$outSignal:${signalInstance.name}" else outSignal
     )

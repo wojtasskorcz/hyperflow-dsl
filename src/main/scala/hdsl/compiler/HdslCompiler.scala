@@ -11,6 +11,7 @@ import scala.collection.mutable
 
 object HdslCompiler {
 
+  val countSignalClassName = "$ControlCount"
   val mergeSignalClassName = "$ControlMerge"
   val nextSignalClassName = "$ControlNext"
 
@@ -24,6 +25,10 @@ object HdslCompiler {
 
   private def createPredefs() = {
     Wf.putSignalClass("Signal" -> SignalClass("Signal", Nil))
+
+    val countSignalClass = SignalClass(countSignalClassName, Nil)
+    countSignalClass.control = Some("count")
+    Wf.putSignalClass(countSignalClassName -> countSignalClass)
 
     val mergeSignalClass = SignalClass(mergeSignalClassName, Nil)
     mergeSignalClass.control = Some("merge")
