@@ -1,7 +1,7 @@
 package hdsl.parser
 
 import hdsl.parser.structures._
-import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation, Rhs, SignalInstantiation}
+import hdsl.parser.structures.rhs._
 import hdsl.parser.structures.wfelems._
 
 import scala.util.parsing.combinator.JavaTokenParsers
@@ -72,16 +72,11 @@ object HdslParser extends JavaTokenParsers {
 
   def lhs: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ { case parts => DotNotationAccessor(parts)}
 
-  def rhs: Parser[Rhs] = signalInstantiation | processInstantiation | expr
+  def rhs: Parser[Rhs] = processOrSignalInstantiation | expr
 
-  def signalInstantiation: Parser[SignalInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
-    case className ~ args ~ Some(expr) => SignalInstantiation(className, args, expr)
-    case className ~ args ~ None => SignalInstantiation(className, args, null)
-  }
-
-  def processInstantiation: Parser[ProcessInstantiation] = "new" ~> ident ~ opt(arrayAccessor) ^^ {
-    case className ~ Some(expr) => ProcessInstantiation(className, expr)
-    case className ~ None => ProcessInstantiation(className, null)
+  def processOrSignalInstantiation: Parser[UndefinedInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
+    case className ~ args ~ Some(expr) => UndefinedInstantiation(className, args, expr)
+    case className ~ args ~ None => UndefinedInstantiation(className, args, null)
   }
 
   def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |

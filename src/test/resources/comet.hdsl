@@ -38,7 +38,7 @@ xml = new XmlData("data.xml")
 config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
 
 // processes are first-order citizens (like functions in functional languages)
-p = new ReadDataSets
+p = new ReadDataSets()
 p.ordering = true
 p.config.args = ""
 

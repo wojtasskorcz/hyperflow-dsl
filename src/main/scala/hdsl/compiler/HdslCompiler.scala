@@ -3,7 +3,7 @@ package hdsl.compiler
 import hdsl.MutableMap
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 import hdsl.parser.structures.DotNotationAccessor
-import hdsl.parser.structures.rhs.{SignalInstantiation, Expr}
+import hdsl.parser.structures.rhs.{ProcessInstantiation, UndefinedInstantiation, SignalInstantiation, Expr}
 import hdsl.parser.structures.traits.Instantiation
 import hdsl.parser.structures.wfelems._
 
@@ -16,8 +16,8 @@ object HdslCompiler {
   val nextSignalClassName = "$ControlNext"
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
-    createPredefs()
     val wfElemsAfterFirstPass = firstPass(wfElems)
+    createPredefs()
     secondPass(wfElemsAfterFirstPass)
     thirdPass()
     generateOutput()
@@ -42,25 +42,47 @@ object HdslCompiler {
   /**
    * Maps the wfElems list into a new list where every signal/process array instantiation has its arrayAccessor
    * resolved to an integer (e.g. instead of ReadDataSets[n] it is ReadDataSets[10])
+   * Also, resolves UndefinedInstantiations to be either SignalInstantiations or ProcessInstantiations
    * No changes to Wf object are performed (although temporary changes may occur, they are cleaned afterwards)
    */
   private def firstPass(wfElems: List[WfElem]): List[WfElem] = {
     val wfElemsAfterFirstPass = wfElems.map({
-      case WfElemAssignment(lhs, rhs: Instantiation) if rhs.arrayAccessor != null => {
-        val arraySize = rhs.arrayAccessor.evaluate
-        if (!arraySize.isInstanceOf[Int]) {
-          throw new RuntimeException(s"Cannot declare array of ${rhs.className} as the index expression doesn't evaluate to an integer")
+      case WfElemAssignment(lhs, UndefinedInstantiation(className, args, arrayAccessor)) => {
+        val arraySize = arrayAccessor match {
+          case null => null
+          case expr => {
+            val size = expr.evaluate
+            if (!size.isInstanceOf[Int]) {
+              throw new RuntimeException(s"Cannot declare array of $className as the index expression doesn't evaluate to an integer")
+            }
+            Expr(size)
+          }
         }
-        WfElemAssignment(lhs, rhs.changedArrayCopy(Expr(arraySize)))
+        val newRhs =
+          if (Wf.signalClasses contains className) SignalInstantiation(className, args, arraySize)
+          else if (Wf.processClasses contains className) ProcessInstantiation(className, arraySize)
+          else throw new RuntimeException(s"Cannot resolve instantiation of $className as neither Signal nor Process")
+
+        WfElemAssignment(lhs, newRhs)
       }
       case VarAssignment(varName, rhs: Expr) => {
         Wf.putVariable(varName -> rhs.evaluate)
         VarAssignment(varName, rhs)
       }
+      case signalClass: SignalClass => {
+        Wf.putSignalClass(signalClass.name -> signalClass)
+        signalClass
+      }
+      case processClass: ProcessClass => {
+        Wf.putProcessClass(processClass.name -> processClass)
+        processClass
+      }
       case x => x
     })
     // clean the variables created for the first pass evaluation
     Wf.variables.clear()
+    Wf.signalClasses.clear()
+    Wf.processClasses.clear()
     wfElemsAfterFirstPass
   }
 
