@@ -6,32 +6,32 @@ signal DataParts()
 process ReadDataSets(x: XmlData, c: Config): Stations {
   config.args = "someArgs"
   config.constantArgs = "constantArgs"
-  genXmlCollection(x, c)
+  genXmlCollection()
 }
 
 process PartitionData(s: Stations): DataParts {
-  partitionData(s)
+  partitionData()
 }
 
 // when not declaring a return type, a generic Signal type is returned
 // something like Object type in Java
 process ComputeStats(d: DataParts, c: sticky Config) {
   parlevel = 3
-  computeStats(d, c)
+  computeStats()
 }
 
 // same as with 'ComputeStats' - leaving argument type undeclared…
 // … implicitly sets it to Signal
 process PlotGraphs(stats) {
   parlevel = 3
-  plotData(stats)
+  plotData()
 }
 
 // like in Scala, returning Unit means, that no usable value is returned
 // process CollectPlots(graph, cnt: CountSignal): Unit {
 // graph.count = cnt
 process CollectPlots(graph): Unit {
-  collectGraphs(graph)
+  collectGraphs()
 }
 
 xml = new XmlData("data.xml")

@@ -13,16 +13,16 @@ process PartitionData(s: Stations): DataParts {
 
 process ComputeStats(d: DataParts, c: sticky Config) {
   parlevel = 3
-  computeStats(d, c)
+  computeStats()
 }
 
 process PlotGraphs(stats) {
   parlevel = 3
-  plotData(stats)
+  plotData()
 }
 
 process CollectPlots(graph): Unit {
-  collectGraphs(graph)
+  collectGraphs()
 }
 
 xmlData = new XmlData("data.xml")

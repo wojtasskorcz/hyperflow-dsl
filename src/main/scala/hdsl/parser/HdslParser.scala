@@ -51,17 +51,15 @@ object HdslParser extends JavaTokenParsers {
 
   def argWithImplicitType: Parser[Arg] = ident ^^ { case name => Arg(name, "Signal", Nil)}
 
-  def processBody: Parser[(List[WfElemAssignment], FunctionInvocation)] = rep(processSettings) ~ functionInvocation ^^ {
-    case settings ~ invocation => (settings, invocation)
+  def processBody: Parser[(List[WfElemAssignment], String)] = rep(processSettings) ~ processFunction ^^ {
+    case settings ~ processFunction => (settings, processFunction)
   }
 
   def processSettings: Parser[WfElemAssignment] = lhs ~ "=" ~ expr ^^ {
     case assignee ~ "=" ~ value => WfElemAssignment(assignee, value)
   }
 
-  def functionInvocation: Parser[FunctionInvocation] = ident ~ ("(" ~> repsep(ident, ",") <~ ")") ^^ {
-    case name ~ args => FunctionInvocation(name, args)
-  }
+  def processFunction: Parser[String] = ident <~ "()"
 
   def assignment: Parser[Assignment] = "var" ~> ident ~ "=" ~ expr ^^ {
     case varName ~ "=" ~ expr => VarAssignment(varName, expr)

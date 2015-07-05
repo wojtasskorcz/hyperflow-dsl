@@ -36,7 +36,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   override def putInstanceToVisibleAndAll(visibleName: String): Unit =  Wf.putProcessInstance(visibleName -> this)
 
   def toMap: MutableMap[String, Any] = {
-    val outMap = mutable.Map[String, Any]("name" -> name, "function" -> processClass.invocation.name)
+    val outMap = mutable.Map[String, Any]("name" -> name, "function" -> processClass.function)
     outMap ++= resolvedPropertiesMap()
     outMap += "type" -> processType
     outMap += "ins" -> ins

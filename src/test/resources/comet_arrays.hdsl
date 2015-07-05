@@ -6,25 +6,25 @@ signal DataParts()
 process ReadDataSets(x: XmlData, c: Config): Stations {
   config.args = "someArgs"
   config.constantArgs = "constantArgs"
-  genXmlCollection(x, c)
+  genXmlCollection()
 }
 
 process PartitionData(s: Stations): DataParts {
-  partitionData(s)
+  partitionData()
 }
 
 process ComputeStats(d: DataParts, c: sticky Config) {
   parlevel = 3
-  computeStats(d, c)
+  computeStats()
 }
 
 process PlotGraphs(stats) {
   parlevel = 3
-  plotData(stats)
+  plotData()
 }
 
 process CollectPlots(graph): Unit {
-  collectGraphs(graph)
+  collectGraphs()
 }
 
 xml = new XmlData("data.xml")
