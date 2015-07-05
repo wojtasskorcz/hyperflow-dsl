@@ -1,0 +1,8 @@
+process MProjectPP(s1, s2): Signal {
+  executor = "syscommand"
+  firingLimit = 1
+  config.executor.executable = "mProjectPP"
+  amqpCommand()
+}
+
+mProjectPP1 = new MProjectPP()

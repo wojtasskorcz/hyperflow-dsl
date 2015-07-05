@@ -74,6 +74,7 @@ class HdslCompilerUnitTest extends UnitSpec {
       JField("function", JString("computeStats")) <- process
     } yield process)(0))
 
+    assertEquals(BigInt(3), (computeStats \ "parlevel").values)
     assertEquals(List("dataParts", "config"), (computeStats \ "ins").values)
     assertEquals(List("config"), (computeStats \ "sticky").values)
     assertEquals(List("stats"), (computeStats \ "outs").values)
@@ -359,6 +360,29 @@ class HdslCompilerUnitTest extends UnitSpec {
     val gatherBranchesOuts = (gatherBranches \ "outs").values.asInstanceOf[List[String]]
     assertEquals(1, gatherBranchesOuts.size)
     assertEquals(nextSignalName, gatherBranchesOuts(0))
+  }
+
+  test("That montage workflow is properly compiled") {
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
+      new InputStreamReader(getClass.getResourceAsStream("/montage.hdsl")))
+    assert(parsingResult.successful)
+    val outMap = HdslCompiler.compile(parsingResult.get)
+    val json = parse(write(outMap))
+
+    val amqpCommand = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("amqpCommand")) <- process
+    } yield process)(0))
+
+    assertEquals("syscommand", (amqpCommand \ "executor").values)
+//    val generateBranchesOuts = (generateBranches \ "outs").values.asInstanceOf[List[String]]
+//    assertEquals(List("branch1", "branch2", "branch3"), generateBranchesOuts)
+//    generateBranchesOuts.foreach(signal => ensureSignal(signal, json))
+//    val generateBranchesIns = (generateBranches \ "ins").values.asInstanceOf[List[String]]
+//    assertEquals(1, generateBranchesIns.size)
+//    val nextSignalName = generateBranchesIns(0)
+//    ensureSignal(nextSignalName, json, Map("control" -> new JString("next")))
+//    assertEquals("choice", (generateBranches \ "type").values)
   }
 
   private def ensureSignal(name: String, json: JValue, requiredParams: Map[String, JValue] = Map.empty) = {

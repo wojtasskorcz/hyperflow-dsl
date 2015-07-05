@@ -24,12 +24,15 @@ object HdslParser extends JavaTokenParsers {
 
   def processClass: Parser[ProcessClass] =
     "process" ~> ident ~ ("(" ~> processClassArgs <~ ")") ~ opt(":" ~> processClassOutArgs) ~ ("{" ~> processBody <~ "}") ^^ {
-      case name ~ args ~ Some(returnTypes) ~ ((settings, invocation)) => {
+      case name ~ args ~ returnTypesOpt ~ ((settings, invocation)) => {
+        val returnTypes = returnTypesOpt match {
+          case Some(types) => types
+          case None => List("Signal")
+        }
         val processClass = ProcessClass(name, args, returnTypes, invocation)
         settings.foreach(assignment => processClass.setProperty(assignment.lhs.getResolvedParts(), assignment.rhs.asInstanceOf[Expr]))
         processClass
       }
-      case name ~ args ~ None ~ ((settings, invocation)) => ProcessClass(name, args, List("Signal"), invocation)
     }
 
   def processClassArgs: Parser[List[Arg]] = repsep(processClassArg, ",")
