@@ -41,6 +41,7 @@ config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359
 p = new ReadDataSets()
 p.ordering = true
 p.config.args = ""
+p.realNumArg = 2.5
 
 // type of 'stations' is inferred from the return value of 'ReadDataSets'
 // 'p' should be invoked only once, as each process instance has only one…

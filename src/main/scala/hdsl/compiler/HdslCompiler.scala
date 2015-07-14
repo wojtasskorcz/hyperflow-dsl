@@ -3,7 +3,7 @@ package hdsl.compiler
 import hdsl.MutableMap
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
 import hdsl.parser.structures.DotNotationAccessor
-import hdsl.parser.structures.rhs.{ProcessInstantiation, UndefinedInstantiation, SignalInstantiation, Expr}
+import hdsl.parser.structures.rhs._
 import hdsl.parser.structures.traits.Instantiation
 import hdsl.parser.structures.wfelems._
 
@@ -88,7 +88,7 @@ object HdslCompiler {
 
   def secondPass(wfElems: List[WfElem]): Unit = {
 
-    def setProcessProperty(accessor: DotNotationAccessor, rhs: Expr) = {
+    def setProcessProperty(accessor: DotNotationAccessor, rhs: Rhs) = {
       Wf.visibleProcessInstances.get(accessor.getBase()) match {
         case Some(processInstance) => processInstance.setProperty(accessor.getResolvedProperties(), rhs)
         case None => throw new RuntimeException(
@@ -100,7 +100,7 @@ object HdslCompiler {
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
       case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
       case WfElemAssignment(lhs, rhs: Instantiation) => rhs.instantiate(lhs)
-      case WfElemAssignment(lhs, rhs: Expr) => setProcessProperty(lhs, rhs)
+      case WfElemAssignment(lhs, rhs) => setProcessProperty(lhs, rhs)
       case VarAssignment(varName, rhs: Expr) => Wf.putVariable(varName -> rhs.evaluate)
       case c: Composition => c.compose()
       case forLoop: ForLoop => forLoop.execute()

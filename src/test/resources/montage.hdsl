@@ -6,3 +6,4 @@ process MProjectPP(s1, s2): Signal {
 }
 
 mProjectPP1 = new MProjectPP()
+mProjectPP1.args = ["-X", true, 0.25]

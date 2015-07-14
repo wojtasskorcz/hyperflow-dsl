@@ -8,7 +8,7 @@ import hdsl.test.UnitSpec
 import org.json4s.JsonAST.{JField, JObject, JString}
 import org.json4s.{JValue, NoTypeHints}
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
+import org.json4s.native.{Json, Serialization}
 import org.json4s.native.Serialization.write
 import org.junit.Assert._
 
@@ -17,11 +17,7 @@ class HdslCompilerUnitTest extends UnitSpec {
   implicit val formats = Serialization.formats(NoTypeHints)
 
   test("That Comet workflow is properly compiled") {
-    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
-      new InputStreamReader(getClass.getResourceAsStream("/comet.hdsl")))
-    assert(parsingResult.successful)
-    val outMap = HdslCompiler.compile(parsingResult.get)
-    val json = parse(write(outMap))
+    val json = compileWorkflow("/comet.hdsl")
 
     // signals test
 
@@ -51,6 +47,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(true, (p \ "ordering").values)
     assertEquals("constantArgs", (p \ "config" \ "constantArgs").values)
     assertEquals("", (p \ "config" \ "args").values)
+    assertEquals(2.5, (p \ "realNumArg").values)
     assertEquals(List("xml", "config"), (p \ "ins").values)
     val pOuts = (p \ "outs").values.asInstanceOf[List[String]]
     assertEquals(1, pOuts.length)
@@ -100,11 +97,7 @@ class HdslCompilerUnitTest extends UnitSpec {
 
   test("That comet_arrays workflow is properly compiled") {
     val n = 3
-    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
-      new InputStreamReader(getClass.getResourceAsStream("/comet_arrays.hdsl")))
-    assert(parsingResult.successful)
-    val outMap = HdslCompiler.compile(parsingResult.get)
-    val json = parse(write(outMap))
+    val json = compileWorkflow("/comet_arrays.hdsl")
 
     // signals test
 
@@ -225,11 +218,7 @@ class HdslCompilerUnitTest extends UnitSpec {
   }
 
   test("That branch_merge workflow is properly compiled") {
-    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
-      new InputStreamReader(getClass.getResourceAsStream("/branch_merge.hdsl")))
-    assert(parsingResult.successful)
-    val outMap = HdslCompiler.compile(parsingResult.get)
-    val json = parse(write(outMap))
+    val json = compileWorkflow("/branch_merge.hdsl")
 
     val generateBranches = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -272,11 +261,7 @@ class HdslCompilerUnitTest extends UnitSpec {
   }
 
   test("That branch_static workflow is properly compiled") {
-    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
-      new InputStreamReader(getClass.getResourceAsStream("/branch_static.hdsl")))
-    assert(parsingResult.successful)
-    val outMap = HdslCompiler.compile(parsingResult.get)
-    val json = parse(write(outMap))
+    val json = compileWorkflow("/branch_static.hdsl")
 
     val generateBranches = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -314,11 +299,7 @@ class HdslCompilerUnitTest extends UnitSpec {
   }
 
   test("That branch_static_blocking workflow is properly compiled") {
-    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
-      new InputStreamReader(getClass.getResourceAsStream("/branch_static_blocking.hdsl")))
-    assert(parsingResult.successful)
-    val outMap = HdslCompiler.compile(parsingResult.get)
-    val json = parse(write(outMap))
+    val json = compileWorkflow("/branch_static_blocking.hdsl")
 
     val generateBranches = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -363,18 +344,16 @@ class HdslCompilerUnitTest extends UnitSpec {
   }
 
   test("That montage workflow is properly compiled") {
-    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
-      new InputStreamReader(getClass.getResourceAsStream("/montage.hdsl")))
-    assert(parsingResult.successful)
-    val outMap = HdslCompiler.compile(parsingResult.get)
-    val json = parse(write(outMap))
+    val json = compileWorkflow("/montage.hdsl")
 
     val amqpCommand = new JObject((for {
       JObject(process) <- json \ "processes"
-      JField("function", JString("amqpCommand")) <- process
+      JField("name", JString("mProjectPP1")) <- process
     } yield process)(0))
 
     assertEquals("syscommand", (amqpCommand \ "executor").values)
+    assertEquals(BigInt(1), (amqpCommand \ "firingLimit").values)
+    assertEquals(List("-X", true, 0.25), (amqpCommand \ "args").values)
 //    val generateBranchesOuts = (generateBranches \ "outs").values.asInstanceOf[List[String]]
 //    assertEquals(List("branch1", "branch2", "branch3"), generateBranchesOuts)
 //    generateBranchesOuts.foreach(signal => ensureSignal(signal, json))
@@ -383,6 +362,17 @@ class HdslCompilerUnitTest extends UnitSpec {
 //    val nextSignalName = generateBranchesIns(0)
 //    ensureSignal(nextSignalName, json, Map("control" -> new JString("next")))
 //    assertEquals("choice", (generateBranches \ "type").values)
+  }
+
+  private def compileWorkflow(filename: String): JValue = {
+    val parsingResult = HdslParser.parseAll(HdslParser.workflow,
+      new InputStreamReader(getClass.getResourceAsStream(filename)))
+    if (!parsingResult.successful) {
+      println(s"Error parsing workflow $filename:\n$parsingResult")
+    }
+    assert(parsingResult.successful)
+    val outMap = HdslCompiler.compile(parsingResult.get)
+    return parse(write(outMap))
   }
 
   private def ensureSignal(name: String, json: JValue, requiredParams: Map[String, JValue] = Map.empty) = {

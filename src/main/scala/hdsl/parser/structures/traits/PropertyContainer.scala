@@ -1,7 +1,7 @@
 package hdsl.parser.structures.traits
 
 import hdsl._
-import hdsl.parser.structures.rhs.Expr
+import hdsl.parser.structures.rhs.{Rhs, ExprList, Expr}
 
 import scala.collection.mutable
 
@@ -9,7 +9,7 @@ trait PropertyContainer {
 
   private val flatProperties = mutable.Map.empty[List[String], Any]
 
-  def setProperty(path: List[String], rhs: Any) = flatProperties += path -> rhs
+  def setProperty(path: List[String], rhs: Rhs) = flatProperties += path -> rhs
 
   def addAllProperties(sourceContainer: PropertyContainer) = flatProperties ++= sourceContainer.flatProperties
 
@@ -18,8 +18,9 @@ trait PropertyContainer {
     def recursivelySetProperty(path: List[String], rhs: Any, targetMap: MutableMap[String, Any]): Unit = {
       path match {
         case List(lastProperty) => rhs match {
-          case unresolvedValue: Expr => targetMap.put(lastProperty, unresolvedValue.evaluate)
-          case resolvedValue: Any => targetMap.put(lastProperty, resolvedValue)
+          case expr: Expr => targetMap.put(lastProperty, expr.evaluate)
+          case exprList: ExprList => targetMap.put(lastProperty, exprList.parts.map(expr => expr.evaluate))
+          case otherValue: Any => throw new RuntimeException("Only Expr or List[Expr] should be stored as properties")
         }
         case longerList => {
           val innerMap = targetMap.get(longerList(0)) match {

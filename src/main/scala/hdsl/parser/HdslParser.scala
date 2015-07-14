@@ -73,7 +73,7 @@ object HdslParser extends JavaTokenParsers {
 
   def lhs: Parser[DotNotationAccessor] = rep1sep(ident, ".") ^^ { case parts => DotNotationAccessor(parts)}
 
-  def rhs: Parser[Rhs] = processOrSignalInstantiation | expr
+  def rhs: Parser[Rhs] = processOrSignalInstantiation | expr | exprList
 
   def processOrSignalInstantiation: Parser[UndefinedInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
     case className ~ args ~ Some(expr) => UndefinedInstantiation(className, args, expr)
@@ -83,9 +83,17 @@ object HdslParser extends JavaTokenParsers {
   def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |
     "false" ^^ { case _ => Expr(false)} |
     stringLiteral ^^ { case str => Expr(str)} |
-    wholeNumber ^^ { case num => Expr(num.toInt)} |
-    floatingPointNumber ^^ { case num => Expr(num.toDouble)} |
+    floatingPointNumber ^^ {
+      // try to convert to integer; if not possible - convert to double
+      case num => try {
+        Expr(num.toInt)
+      } catch {
+        case e: NumberFormatException => Expr(num.toDouble)
+      }
+    } |
     ident ^^ { case varName => Expr(varName)}
+
+  def exprList: Parser[ExprList] = "[" ~> repsep(expr, ",") <~ "]" ^^ { case exprs => ExprList(exprs)}
 
   def arrayAccessor: Parser[Expr] = "[" ~> expr <~ "]"
 
