@@ -346,6 +346,9 @@ class HdslCompilerUnitTest extends UnitSpec {
   test("That montage workflow is properly compiled") {
     val json = compileWorkflow("/montage.hdsl")
 
+    assertEquals(2, (json \ "ins").values.asInstanceOf[List[String]].length)
+    assertEquals(2, (json \ "outs").values.asInstanceOf[List[String]].length)
+
     val amqpCommand = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("name", JString("mProjectPP1")) <- process

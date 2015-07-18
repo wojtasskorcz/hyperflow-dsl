@@ -2,7 +2,7 @@ package hdsl.compiler
 
 import hdsl.MutableMap
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
-import hdsl.parser.structures.DotNotationAccessor
+import hdsl.parser.structures.{Arg, DotNotationAccessor}
 import hdsl.parser.structures.rhs._
 import hdsl.parser.structures.traits.Instantiation
 import hdsl.parser.structures.wfelems._
@@ -16,6 +16,7 @@ object HdslCompiler {
   val nextSignalClassName = "$ControlNext"
 
   def compile(wfElems: List[WfElem]): MutableMap[String, Any] = {
+    createPredefs()
     val wfElemsAfterFirstPass = firstPass(wfElems)
     createPredefs()
     secondPass(wfElemsAfterFirstPass)
@@ -37,6 +38,10 @@ object HdslCompiler {
     val nextSignalClass = SignalClass(nextSignalClassName, Nil)
     nextSignalClass.control = Some("next")
     Wf.putSignalClass(nextSignalClassName -> nextSignalClass)
+
+    Wf.putProcessClass("Workflow" -> ProcessClass("Workflow", List.empty[Arg], List.empty[String], "workflow"))
+
+    Wf.putProcessInstance("workflow" -> ProcessInstance("workflow", ProcessInstantiation("Workflow", null)))
   }
 
   /**
@@ -133,11 +138,10 @@ object HdslCompiler {
 
   private def generateOutput(): MutableMap[String, Any] = {
     val outMap = mutable.Map.empty[String, Any]
-    outMap += "processes" -> Wf.allProcessInstances.map(instance => instance.toMap)
+    outMap += "processes" -> Wf.allProcessInstances.filterNot(_.name == "workflow").map(_.toMap)
     outMap += "signals" -> Wf.allSignalInstances.map(instance => instance.toMap)
-    // TODO implement workflow ins/outs handling
-    outMap += "ins" -> List()
-    outMap += "outs" -> List()
+    outMap += "ins" -> Wf.visibleProcessInstances("workflow").ins
+    outMap += "outs" -> Wf.visibleProcessInstances("workflow").outs
     outMap
   }
 

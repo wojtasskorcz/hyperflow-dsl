@@ -50,28 +50,31 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   }
 
   def addInput(signal: SignalInstance, suffix: String = "") = {
-    // if it's not a control signal, we have to check if it adheres to the process class signature
-    if (signal.signalClass.control.isEmpty) {
-      if (ins.size == processClass.args.size) {
-        throw new RuntimeException(s"Cannot add signal ${signal.name} as input to process ${name}. Too many inputs.")
+    // we don't check all the preconditions if it's the workflow's 'ins'
+    if (name != "workflow") {
+      // if it's not a control signal, we have to check if it adheres to the process class signature
+      if (signal.signalClass.control.isEmpty) {
+        if (ins.size == processClass.args.size) {
+          throw new RuntimeException(s"Cannot add signal ${signal.name} as input to process ${name}. Too many inputs.")
+        }
+        val inputArg = processClass.args(ins.size)
+        if (signal.signalClass.name != inputArg.argType) {
+          throw new RuntimeException(s"Input number ${ins.size} of process $name is of type ${inputArg.argType} cannot be set to signal ${signal.name} of class ${signal.signalClass.name}")
+        }
+        if (inputArg.modifiers.contains("sticky")) {
+          sticky += signal.name
+        }
       }
-      val inputArg = processClass.args(ins.size)
-      if (signal.signalClass.name != inputArg.argType) {
-        throw new RuntimeException(s"Input number ${ins.size} of process $name is of type ${inputArg.argType} cannot be set to signal ${signal.name} of class ${signal.signalClass.name}")
-      }
-      if (inputArg.modifiers.contains("sticky")) {
-        sticky += signal.name
-      }
-    }
-    if (signal.choiceSource.nonEmpty) {
-      processType match {
-        case "join" => choiceSource = signal.choiceSource
-        case _ => choiceSource match {
-          case None => processClass.returnTypes.size match {
-            case 1 => choiceSource = signal.choiceSource
-            case n => throw new RuntimeException(s"Cannot set signal ${signal.name} deriving from a choice process as input to process $name as the process doesn't have exactly one output")
+      if (signal.choiceSource.nonEmpty) {
+        processType match {
+          case "join" => choiceSource = signal.choiceSource
+          case _ => choiceSource match {
+            case None => processClass.returnTypes.size match {
+              case 1 => choiceSource = signal.choiceSource
+              case n => throw new RuntimeException(s"Cannot set signal ${signal.name} deriving from a choice process as input to process $name as the process doesn't have exactly one output")
+            }
+            case Some(alreadySetChoiceSource) => throw new RuntimeException(s"Cannot set two signals deriving from a choice process as inputs to the same process $name. Conflicting signal: ${signal.name}")
           }
-          case Some(alreadySetChoiceSource) => throw new RuntimeException(s"Cannot set two signals deriving from a choice process as inputs to the same process $name. Conflicting signal: ${signal.name}")
         }
       }
     }
@@ -79,17 +82,21 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   }
 
   def addOutput(signal: SignalInstance) = {
-    if (outs.size >= processClass.returnTypes.size && signal.signalClass.control.isEmpty) {
-      throw new RuntimeException(s"Cannot add another output signal ${signal.name} to process $name")
-    }
-    if (choiceSource.nonEmpty && processType != "join") {
-      signal.choiceSource = choiceSource
+    // we don't check all the preconditions if it's the workflow's 'outs'
+    if (name != "workflow") {
+      if (outs.size >= processClass.returnTypes.size && signal.signalClass.control.isEmpty) {
+        throw new RuntimeException(s"Cannot add another output signal ${signal.name} to process $name")
+      }
+      if (choiceSource.nonEmpty && processType != "join") {
+        signal.choiceSource = choiceSource
+      }
     }
     outs += signal.name
   }
 
   def getNextOutSignalClass: Option[SignalClass] =
-    if (outs.size >= processClass.returnTypes.size) None
+    if (name == "workflow") Wf.signalClasses.get("Signal")
+    else if (outs.size >= processClass.returnTypes.size) None
     else Some(Wf.signalClasses(processClass.returnTypes(outs.size)))
 
   def computeActiveBranchesCount() = {
