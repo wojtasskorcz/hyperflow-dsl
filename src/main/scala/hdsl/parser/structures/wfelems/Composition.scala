@@ -66,9 +66,11 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
         val countSignal = createCountSignal(DotNotationAccessor(parts.dropRight(1)).stringify)
         processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify), s":${countSignal.name}")
       }
-      case CompositionElem(signalNames, null) => signalNames.foreach(
-        signalName => processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify))
-      )
+      case CompositionElem(signalNames, null) => signalNames.foreach(signalName => {
+        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringify,
+          createSignal(signalName.stringify, processInstance.getNextInSignalClass))
+        processInstance.addInput(signalInstance)
+      })
     }
   }
 
@@ -124,7 +126,8 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
 
     signalElem match {
       case CompositionElem(signalNames, _) => signalNames.foreach(signalName => {
-        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringify, createOutputSignal(signalName.stringify, processInstance))
+        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringify,
+          createSignal(signalName.stringify, processInstance.getNextOutSignalClass))
         processInstance.addOutput(signalInstance)
         if (markChoiceSource) {
           signalInstance.choiceSource = Some(processInstance)
@@ -133,10 +136,10 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     }
   }
 
-  private def createOutputSignal(signalName: String, processInstance: ProcessInstance): SignalInstance = {
-    val signalClass = processInstance.getNextOutSignalClass match {
+  private def createSignal(signalName: String, optSignalClass: Option[SignalClass]): SignalInstance = {
+    val signalClass = optSignalClass match {
       case Some(signalClass) => signalClass
-      case None => throw new RuntimeException(s"Cannot add another out signal ($signalName) to process ${processInstance.name}")
+      case None => throw new RuntimeException(s"Cannot create signal ($signalName)")
     }
     if (signalClass.args.nonEmpty) {
       throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} because the class takes arguments")

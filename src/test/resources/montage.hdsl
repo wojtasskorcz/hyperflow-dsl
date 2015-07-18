@@ -1,9 +1,4 @@
-in1 = new Signal()
-in2 = new Signal()
-out1 = new Signal()
-out2 = new Signal()
-
-process MProjectPP(s1, s2): Signal {
+process MProjectPP(s1, s2): (Signal, Signal) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mProjectPP"
@@ -12,5 +7,7 @@ process MProjectPP(s1, s2): Signal {
 
 mProjectPP1 = new MProjectPP()
 mProjectPP1.args = ["-X", true, 0.25]
+
+(in1, in2) -> mProjectPP1 -> (out1, out2)
 
 (in1, in2) -> workflow -> (out1, out2)

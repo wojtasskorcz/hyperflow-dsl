@@ -5,12 +5,6 @@ process MProjectPP(s1, s2): (Signal, Signal) {
   amqpCommand()
 }
 
-in1 = new Signal()
-in2 = new Signal()
-in3 = new Signal()
-in4 = new Signal()
-inBigRegion = new Signal()
-
 mProjectPP1 = new MProjectPP()
 mProjectPP1.args = ["-X", "-x", "0.90423", "2mass-atlas-001124n-j0880044.fits",
   "p2mass-atlas-001124n-j0880044.fits", "big_region_20150705_164350_21580.hdr"]
@@ -28,5 +22,8 @@ mProjectPP4.args = ["-X", "-x", "0.90415", "2mass-atlas-001124n-j0870232.fits",
   "p2mass-atlas-001124n-j0870232.fits", "big_region_20150705_164350_21580.hdr"]
 
 (in1, inBigRegion) -> mProjectPP1 -> (out1_1, out1_2)
+(in2, inBigRegion) -> mProjectPP2 -> (out2_1, out2_2)
+(in3, inBigRegion) -> mProjectPP3 -> (out3_1, out3_2)
+(in4, inBigRegion) -> mProjectPP4 -> (out4_1, out4_2)
 
 (in1, inBigRegion, in2, in3, in4) -> workflow -> (out1_1, out1_2, out2_1, out2_2, out3_1, out3_2, out4_1, out4_2)

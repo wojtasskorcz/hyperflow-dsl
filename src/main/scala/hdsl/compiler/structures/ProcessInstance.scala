@@ -99,6 +99,11 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
     else if (outs.size >= processClass.returnTypes.size) None
     else Some(Wf.signalClasses(processClass.returnTypes(outs.size)))
 
+  def getNextInSignalClass: Option[SignalClass] =
+    if (name == "workflow") Wf.signalClasses.get("Signal")
+    else if (ins.size >= processClass.args.size) None
+    else Some(Wf.signalClasses(processClass.args(ins.size).argType))
+
   def computeActiveBranchesCount() = {
     activeBranchesCount = Some(Wf.allSignalInstances.count(
       signalInstance => ins.contains(signalInstance.name) && signalInstance.choiceSource == choiceSource))
