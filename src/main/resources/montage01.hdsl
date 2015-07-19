@@ -6,42 +6,91 @@ process MProjectPP(s1, s2): (Signal, Signal) {
 }
 
 mProjectPP1 = new MProjectPP()
-mProjectPP1.args = ["-X", "-x", "0.90423", "2mass-atlas-001124n-j0880044.fits",
+mProjectPP1.config.executor.args = ["-X", "-x", "0.90423", "2mass-atlas-001124n-j0880044.fits",
   "p2mass-atlas-001124n-j0880044.fits", "big_region_20150705_164350_21580.hdr"]
 
 mProjectPP2 = new MProjectPP()
-mProjectPP2.args = ["-X", "-x", "0.90465", "2mass-atlas-001124n-j0880032.fits",
+mProjectPP2.config.executor.args = ["-X", "-x", "0.90465", "2mass-atlas-001124n-j0880032.fits",
   "p2mass-atlas-001124n-j0880032.fits", "big_region_20150705_164350_21580.hdr"]
 
 mProjectPP3 = new MProjectPP()
-mProjectPP3.args = ["-X", "-x", "0.90448", "2mass-atlas-001124n-j0870244.fits",
+mProjectPP3.config.executor.args = ["-X", "-x", "0.90448", "2mass-atlas-001124n-j0870244.fits",
   "p2mass-atlas-001124n-j0870244.fits", "big_region_20150705_164350_21580.hdr"]
 
 mProjectPP4 = new MProjectPP()
-mProjectPP4.args = ["-X", "-x", "0.90415", "2mass-atlas-001124n-j0870232.fits",
+mProjectPP4.config.executor.args = ["-X", "-x", "0.90415", "2mass-atlas-001124n-j0870232.fits",
   "p2mass-atlas-001124n-j0870232.fits", "big_region_20150705_164350_21580.hdr"]
 
 mProjectPP5 = new MProjectPP()
-mProjectPP5.args = ["-X", "-x", "0.90640", "2mass-atlas-001124n-j0860044.fits",
+mProjectPP5.config.executor.args = ["-X", "-x", "0.90640", "2mass-atlas-001124n-j0860044.fits",
   "p2mass-atlas-001124n-j0860044.fits", "big_region_20150705_164350_21580.hdr"]
 
 mProjectPP6 = new MProjectPP()
-mProjectPP6.args = ["-X", "-x", "0.90682", "2mass-atlas-001124n-j0860032.fits",
+mProjectPP6.config.executor.args = ["-X", "-x", "0.90682", "2mass-atlas-001124n-j0860032.fits",
   "p2mass-atlas-001124n-j0860032.fits", "big_region_20150705_164350_21580.hdr"]
+
+(in1, inBigRegion) -> mProjectPP1 -> (atlas1, atlasArea1)
+(in2, inBigRegion) -> mProjectPP2 -> (atlas2, atlasArea2)
+(in3, inBigRegion) -> mProjectPP3 -> (atlas3, atlasArea3)
+(in4, inBigRegion) -> mProjectPP4 -> (atlas4, atlasArea4)
+(in5, inBigRegion) -> mProjectPP5 -> (atlas5, atlasArea5)
+(in6, inBigRegion) -> mProjectPP6 -> (atlas6, atlasArea6)
+
 
 
 process MDiffFit(s1, s2, s3, s4, s5, s6, s7): (Signal, Signal) {
   executor = "syscommand"
   firingLimit = 1
-  config.executor.executable = "mProjectPP"
+  config.executor.executable = "mDiffFit"
   amqpCommand()
 }
 
-(in1, inBigRegion) -> mProjectPP1 -> (out1_1, out1_2)
-(in2, inBigRegion) -> mProjectPP2 -> (out2_1, out2_2)
-(in3, inBigRegion) -> mProjectPP3 -> (out3_1, out3_2)
-(in4, inBigRegion) -> mProjectPP4 -> (out4_1, out4_2)
-(in5, inBigRegion) -> mProjectPP5 -> (out5_1, out5_2)
-(in6, inBigRegion) -> mProjectPP6 -> (out6_1, out6_2)
+mDiffFit1 = new MDiffFit()
+mDiffFit1.config.executor.args = ["-s", "fit.000001.000002.txt", "p2mass-atlas-001124n-j0880044.fits",
+  "p2mass-atlas-001124n-j0880032.fits", "diff.000001.000002.fits", "big_region_20150705_164350_21580.hdr"]
 
-(in1, inBigRegion, in2, in3, in4, in5, in6) -> workflow
+mDiffFit2 = new MDiffFit()
+mDiffFit2.config.executor.args = ["-s", "fit.000001.000004.txt", "p2mass-atlas-001124n-j0880044.fits",
+  "p2mass-atlas-001124n-j0870232.fits", "diff.000001.000004.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit3 = new MDiffFit()
+mDiffFit3.config.executor.args = ["-s", "fit.000002.000003.txt", "p2mass-atlas-001124n-j0880032.fits",
+  "p2mass-atlas-001124n-j0870244.fits", "diff.000002.000003.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit4 = new MDiffFit()
+mDiffFit4.config.executor.args = ["-s", "fit.000002.000004.txt", "p2mass-atlas-001124n-j0880032.fits",
+  "p2mass-atlas-001124n-j0870232.fits", "diff.000002.000004.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit5 = new MDiffFit()
+mDiffFit5.config.executor.args = ["-s", "fit.000003.000004.txt", "p2mass-atlas-001124n-j0870244.fits",
+  "p2mass-atlas-001124n-j0870232.fits", "diff.000003.000004.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit6 = new MDiffFit()
+mDiffFit6.config.executor.args = ["-s", "fit.000003.000006.txt", "p2mass-atlas-001124n-j0870244.fits",
+  "p2mass-atlas-001124n-j0860032.fits", "diff.000003.000006.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit7 = new MDiffFit()
+mDiffFit7.config.executor.args = ["-s", "fit.000004.000005.txt", "p2mass-atlas-001124n-j0870232.fits",
+  "p2mass-atlas-001124n-j0860044.fits", "diff.000004.000005.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit8 = new MDiffFit()
+mDiffFit8.config.executor.args = ["-s", "fit.000004.000006.txt", "p2mass-atlas-001124n-j0870232.fits",
+  "p2mass-atlas-001124n-j0860032.fits", "diff.000004.000006.fits", "big_region_20150705_164350_21580.hdr"]
+
+mDiffFit9 = new MDiffFit()
+mDiffFit9.config.executor.args = ["-s", "fit.000005.000006.txt", "p2mass-atlas-001124n-j0860044.fits",
+  "p2mass-atlas-001124n-j0860032.fits", "diff.000005.000006.fits", "big_region_20150705_164350_21580.hdr"]
+
+(mDiff, mFitplane, atlas1, atlasArea1, atlas2, atlasArea2, inBigRegion) -> mDiffFit1 -> (fit1, diff1)
+(mDiff, mFitplane, atlas1, atlasArea1, atlas4, atlasArea4, inBigRegion) -> mDiffFit2 -> (fit2, diff2)
+(mDiff, mFitplane, atlas2, atlasArea2, atlas3, atlasArea3, inBigRegion) -> mDiffFit3 -> (fit3, diff3)
+(mDiff, mFitplane, atlas2, atlasArea2, atlas4, atlasArea4, inBigRegion) -> mDiffFit4 -> (fit4, diff4)
+(mDiff, mFitplane, atlas3, atlasArea3, atlas4, atlasArea4, inBigRegion) -> mDiffFit5 -> (fit5, diff5)
+(mDiff, mFitplane, atlas3, atlasArea3, atlas6, atlasArea6, inBigRegion) -> mDiffFit6 -> (fit6, diff6)
+(mDiff, mFitplane, atlas4, atlasArea4, atlas5, atlasArea5, inBigRegion) -> mDiffFit7 -> (fit7, diff7)
+(mDiff, mFitplane, atlas4, atlasArea4, atlas6, atlasArea6, inBigRegion) -> mDiffFit8 -> (fit8, diff8)
+(mDiff, mFitplane, atlas5, atlasArea5, atlas6, atlasArea6, inBigRegion) -> mDiffFit9 -> (fit9, diff9)
+
+
+(in1, inBigRegion, in2, in3, in4, in5, in6, mDiff, mFitplane) -> workflow 
+-> (diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9)
