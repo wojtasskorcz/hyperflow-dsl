@@ -10,4 +10,14 @@ mProjectPP1.args = ["-X", true, 0.25]
 
 (in1, in2) -> mProjectPP1 -> (out1, out2)
 
+process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) {
+  executor = "syscommand"
+  firingLimit = 1
+  config.executor.executable = "mConcatFit"
+  config.executor.args = ["x", false, 3]
+  amqpCommand()
+}
+
+mConcatFit = new MConcatFit()
+
 (in1, in2) -> workflow -> (out1, out2)

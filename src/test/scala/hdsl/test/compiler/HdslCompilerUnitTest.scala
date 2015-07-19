@@ -349,22 +349,21 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(2, (json \ "ins").values.asInstanceOf[List[String]].length)
     assertEquals(2, (json \ "outs").values.asInstanceOf[List[String]].length)
 
-    val amqpCommand = new JObject((for {
+    val mProjectPP1 = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("name", JString("mProjectPP1")) <- process
     } yield process)(0))
 
-    assertEquals("syscommand", (amqpCommand \ "executor").values)
-    assertEquals(BigInt(1), (amqpCommand \ "firingLimit").values)
-    assertEquals(List("-X", true, 0.25), (amqpCommand \ "args").values)
-//    val generateBranchesOuts = (generateBranches \ "outs").values.asInstanceOf[List[String]]
-//    assertEquals(List("branch1", "branch2", "branch3"), generateBranchesOuts)
-//    generateBranchesOuts.foreach(signal => ensureSignal(signal, json))
-//    val generateBranchesIns = (generateBranches \ "ins").values.asInstanceOf[List[String]]
-//    assertEquals(1, generateBranchesIns.size)
-//    val nextSignalName = generateBranchesIns(0)
-//    ensureSignal(nextSignalName, json, Map("control" -> new JString("next")))
-//    assertEquals("choice", (generateBranches \ "type").values)
+    assertEquals("syscommand", (mProjectPP1 \ "executor").values)
+    assertEquals(BigInt(1), (mProjectPP1 \ "firingLimit").values)
+    assertEquals(List("-X", true, 0.25), (mProjectPP1 \ "args").values)
+
+    val mConcatFit = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("name", JString("mConcatFit")) <- process
+    } yield process)(0))
+
+    assertEquals(List("x", false, 3), (mConcatFit \ "config" \ "executor" \ "args").values)
   }
 
   private def compileWorkflow(filename: String): JValue = {
