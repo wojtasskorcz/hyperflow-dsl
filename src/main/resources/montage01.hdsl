@@ -157,5 +157,56 @@ mBackground6.config.executor.args = ["-t", "p2mass-atlas-001124n-j0860032.fits",
 
 
 
-(in1, inBigRegion, in2, in3, in4, in5, in6, mDiff, mFitplane, statfile, pimages) -> workflow 
--> (diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9)
+
+process MImgtbl(s1, s2, s3, s4, s5, s6, s7) {
+  executor = "syscommand"
+  firingLimit = 1
+  config.executor.executable = "mImgtbl"
+  config.executor.args = ["-t", "cimages_20150705_164350_21580.tbl", ".", "newcimages.tbl"]
+  amqpCommand()
+}
+
+(cimages, mass1, mass2, mass3, mass4, mass5, mass6) -> MImgtbl -> newcimages
+
+
+
+process MAdd(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14): (Signal, Signal) {
+  executor = "syscommand"
+  firingLimit = 1
+  config.executor.executable = "mAdd"
+  config.executor.args = ["-e", "newcimages.tbl", "region_20150705_164350_21580.hdr", "mosaic_20150705_164350_21580.fits"]
+  amqpCommand()
+}
+
+(newcimages, region, mass1, massArea1, mass2, massArea2, mass3, massArea3, mass4, massArea4, mass5, massArea5,
+  mass6, massArea6) -> MAdd -> (mosaic, mosaicArea)
+
+
+
+process MShrink(s) {
+  executor = "syscommand"
+  firingLimit = 1
+  config.executor.executable = "mShrink"
+  config.executor.args = ["mosaic_20150705_164350_21580.fits", "shrunken_20150705_164350_21580.fits", "1"]
+  amqpCommand()
+}
+
+mosaic -> MShrink -> shrunken
+
+
+
+process MJPEG(s) {
+  executor = "syscommand"
+  firingLimit = 1
+  config.executor.executable = "mJPEG"
+  config.executor.args = ["-ct", "1", "-gray", "shrunken_20150705_164350_21580.fits",
+    "min", "max", "gaussianlog", "-out", "shrunken_20150705_164350_21580.jpg"]
+  amqpCommand()
+}
+
+shrunken -> MJPEG -> shrunkenJpg
+
+
+
+(in1, inBigRegion, in2, in3, in4, in5, in6, mDiff, mFitplane, statfile, pimages, cimages, region) -> workflow 
+-> (diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9, mosaicArea, shrunkenJpg)
