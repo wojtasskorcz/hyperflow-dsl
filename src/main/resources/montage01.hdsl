@@ -5,36 +5,23 @@ process MProjectPP(s1, s2): (Signal, Signal) {
   amqpCommand()
 }
 
-mProjectPP1 = new MProjectPP()
-mProjectPP1.config.executor.args = ["-X", "-x", "0.90423", "2mass-atlas-001124n-j0880044.fits",
+mProjectPPs = new MProjectPP()[6]
+mProjectPPs[0].config.executor.args = ["-X", "-x", "0.90423", "2mass-atlas-001124n-j0880044.fits",
   "p2mass-atlas-001124n-j0880044.fits", "big_region_20150705_164350_21580.hdr"]
-
-mProjectPP2 = new MProjectPP()
-mProjectPP2.config.executor.args = ["-X", "-x", "0.90465", "2mass-atlas-001124n-j0880032.fits",
+mProjectPPs[1].config.executor.args = ["-X", "-x", "0.90465", "2mass-atlas-001124n-j0880032.fits",
   "p2mass-atlas-001124n-j0880032.fits", "big_region_20150705_164350_21580.hdr"]
-
-mProjectPP3 = new MProjectPP()
-mProjectPP3.config.executor.args = ["-X", "-x", "0.90448", "2mass-atlas-001124n-j0870244.fits",
+mProjectPPs[2].config.executor.args = ["-X", "-x", "0.90448", "2mass-atlas-001124n-j0870244.fits",
   "p2mass-atlas-001124n-j0870244.fits", "big_region_20150705_164350_21580.hdr"]
-
-mProjectPP4 = new MProjectPP()
-mProjectPP4.config.executor.args = ["-X", "-x", "0.90415", "2mass-atlas-001124n-j0870232.fits",
+mProjectPPs[3].config.executor.args = ["-X", "-x", "0.90415", "2mass-atlas-001124n-j0870232.fits",
   "p2mass-atlas-001124n-j0870232.fits", "big_region_20150705_164350_21580.hdr"]
-
-mProjectPP5 = new MProjectPP()
-mProjectPP5.config.executor.args = ["-X", "-x", "0.90640", "2mass-atlas-001124n-j0860044.fits",
+mProjectPPs[4].config.executor.args = ["-X", "-x", "0.90640", "2mass-atlas-001124n-j0860044.fits",
   "p2mass-atlas-001124n-j0860044.fits", "big_region_20150705_164350_21580.hdr"]
-
-mProjectPP6 = new MProjectPP()
-mProjectPP6.config.executor.args = ["-X", "-x", "0.90682", "2mass-atlas-001124n-j0860032.fits",
+mProjectPPs[5].config.executor.args = ["-X", "-x", "0.90682", "2mass-atlas-001124n-j0860032.fits",
   "p2mass-atlas-001124n-j0860032.fits", "big_region_20150705_164350_21580.hdr"]
 
-(in1, inBigRegion) -> mProjectPP1 -> (atlas1, atlasArea1)
-(in2, inBigRegion) -> mProjectPP2 -> (atlas2, atlasArea2)
-(in3, inBigRegion) -> mProjectPP3 -> (atlas3, atlasArea3)
-(in4, inBigRegion) -> mProjectPP4 -> (atlas4, atlasArea4)
-(in5, inBigRegion) -> mProjectPP5 -> (atlas5, atlasArea5)
-(in6, inBigRegion) -> mProjectPP6 -> (atlas6, atlasArea6)
+for (mProjectPP, idx <- mProjectPPs) {
+  (in[idx], inBigRegion) -> mProjectPP -> (atlas[idx], atlasArea[idx])
+}
 
 
 
@@ -81,15 +68,15 @@ mDiffFit9 = new MDiffFit()
 mDiffFit9.config.executor.args = ["-s", "fit.000005.000006.txt", "p2mass-atlas-001124n-j0860044.fits",
   "p2mass-atlas-001124n-j0860032.fits", "diff.000005.000006.fits", "big_region_20150705_164350_21580.hdr"]
 
-(mDiff, mFitplane, atlas1, atlasArea1, atlas2, atlasArea2, inBigRegion) -> mDiffFit1 -> (fit1, diff1)
-(mDiff, mFitplane, atlas1, atlasArea1, atlas4, atlasArea4, inBigRegion) -> mDiffFit2 -> (fit2, diff2)
-(mDiff, mFitplane, atlas2, atlasArea2, atlas3, atlasArea3, inBigRegion) -> mDiffFit3 -> (fit3, diff3)
-(mDiff, mFitplane, atlas2, atlasArea2, atlas4, atlasArea4, inBigRegion) -> mDiffFit4 -> (fit4, diff4)
-(mDiff, mFitplane, atlas3, atlasArea3, atlas4, atlasArea4, inBigRegion) -> mDiffFit5 -> (fit5, diff5)
-(mDiff, mFitplane, atlas3, atlasArea3, atlas6, atlasArea6, inBigRegion) -> mDiffFit6 -> (fit6, diff6)
-(mDiff, mFitplane, atlas4, atlasArea4, atlas5, atlasArea5, inBigRegion) -> mDiffFit7 -> (fit7, diff7)
-(mDiff, mFitplane, atlas4, atlasArea4, atlas6, atlasArea6, inBigRegion) -> mDiffFit8 -> (fit8, diff8)
-(mDiff, mFitplane, atlas5, atlasArea5, atlas6, atlasArea6, inBigRegion) -> mDiffFit9 -> (fit9, diff9)
+(mDiff, mFitplane, atlas[0], atlasArea[0], atlas[1], atlasArea[1], inBigRegion) -> mDiffFit1 -> (fit1, diff1)
+(mDiff, mFitplane, atlas[0], atlasArea[0], atlas[3], atlasArea[3], inBigRegion) -> mDiffFit2 -> (fit2, diff2)
+(mDiff, mFitplane, atlas[1], atlasArea[1], atlas[2], atlasArea[2], inBigRegion) -> mDiffFit3 -> (fit3, diff3)
+(mDiff, mFitplane, atlas[1], atlasArea[1], atlas[3], atlasArea[3], inBigRegion) -> mDiffFit4 -> (fit4, diff4)
+(mDiff, mFitplane, atlas[2], atlasArea[2], atlas[3], atlasArea[3], inBigRegion) -> mDiffFit5 -> (fit5, diff5)
+(mDiff, mFitplane, atlas[2], atlasArea[2], atlas[5], atlasArea[5], inBigRegion) -> mDiffFit6 -> (fit6, diff6)
+(mDiff, mFitplane, atlas[3], atlasArea[3], atlas[4], atlasArea[4], inBigRegion) -> mDiffFit7 -> (fit7, diff7)
+(mDiff, mFitplane, atlas[3], atlasArea[3], atlas[5], atlasArea[5], inBigRegion) -> mDiffFit8 -> (fit8, diff8)
+(mDiff, mFitplane, atlas[4], atlasArea[4], atlas[5], atlasArea[5], inBigRegion) -> mDiffFit9 -> (fit9, diff9)
 
 
 
@@ -148,12 +135,12 @@ mBackground6 = new MBackground()
 mBackground6.config.executor.args = ["-t", "p2mass-atlas-001124n-j0860032.fits",
   "c2mass-atlas-001124n-j0860032.fits", "pimages_20150705_164350_21580.tbl", "corrections.tbl"]
 
-(atlas1, atlasArea1, pimages, corrections) -> mBackground1 -> (mass1, massArea1)
-(atlas2, atlasArea2, pimages, corrections) -> mBackground2 -> (mass2, massArea2)
-(atlas3, atlasArea3, pimages, corrections) -> mBackground3 -> (mass3, massArea3)
-(atlas4, atlasArea4, pimages, corrections) -> mBackground4 -> (mass4, massArea4)
-(atlas5, atlasArea5, pimages, corrections) -> mBackground5 -> (mass5, massArea5)
-(atlas6, atlasArea6, pimages, corrections) -> mBackground6 -> (mass6, massArea6)
+(atlas[0], atlasArea[0], pimages, corrections) -> mBackground1 -> (mass1, massArea1)
+(atlas[1], atlasArea[1], pimages, corrections) -> mBackground2 -> (mass2, massArea2)
+(atlas[2], atlasArea[2], pimages, corrections) -> mBackground3 -> (mass3, massArea3)
+(atlas[3], atlasArea[3], pimages, corrections) -> mBackground4 -> (mass4, massArea4)
+(atlas[4], atlasArea[4], pimages, corrections) -> mBackground5 -> (mass5, massArea5)
+(atlas[5], atlasArea[5], pimages, corrections) -> mBackground6 -> (mass6, massArea6)
 
 
 
@@ -208,5 +195,5 @@ shrunken -> MJPEG -> shrunkenJpg
 
 
 
-(in1, inBigRegion, in2, in3, in4, in5, in6, mDiff, mFitplane, statfile, pimages, cimages, region) -> workflow 
+(in[0], inBigRegion, in[1], in[2], in[3], in[4], in[5], mDiff, mFitplane, statfile, pimages, cimages, region) -> workflow
 -> (diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9, mosaicArea, shrunkenJpg)
