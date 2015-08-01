@@ -94,10 +94,10 @@ object HdslCompiler {
   def secondPass(wfElems: List[WfElem]): Unit = {
 
     def setProcessProperty(accessor: DotNotationAccessor, rhs: Rhs) = {
-      Wf.visibleProcessInstances.get(accessor.getBase()) match {
-        case Some(processInstance) => processInstance.setProperty(accessor.getResolvedProperties(), rhs)
+      Wf.visibleProcessInstances.get(accessor.stringifiedBase) match {
+        case Some(processInstance) => processInstance.setProperty(accessor.resolvedProperties, rhs)
         case None => throw new RuntimeException(
-          s"cannot set property ${accessor.getResolvedProperties()} as ${accessor.getBase()} is not defined")
+          s"cannot set property ${accessor.resolvedProperties} as ${accessor.stringifiedBase} is not defined")
       }
     }
 

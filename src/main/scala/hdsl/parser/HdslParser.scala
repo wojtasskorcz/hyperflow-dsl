@@ -30,7 +30,7 @@ object HdslParser extends JavaTokenParsers {
           case None => List("Signal")
         }
         val processClass = ProcessClass(name, args, returnTypes, invocation)
-        settings.foreach(assignment => processClass.setProperty(assignment.lhs.getResolvedParts(), assignment.rhs))
+        settings.foreach(assignment => processClass.setProperty(assignment.lhs.resolvedParts, assignment.rhs))
         processClass
       }
     }
@@ -67,7 +67,7 @@ object HdslParser extends JavaTokenParsers {
   def assignment: Parser[Assignment] = "var" ~> ident ~ "=" ~ expr ^^ {
     case varName ~ "=" ~ expr => VarAssignment(varName, expr)
   } |
-    lhs ~ "=" ~ rhs ^^ {
+    dotNotationPath ~ "=" ~ rhs ^^ {
       case lhs ~ "=" ~ rhs => WfElemAssignment(lhs, rhs)
     }
 

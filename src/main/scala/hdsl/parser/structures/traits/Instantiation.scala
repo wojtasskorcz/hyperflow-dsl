@@ -30,7 +30,7 @@ trait Instantiation extends Rhs {
       instance.putInstanceOnlyToVisible(instanceName)
 
       0 until arrayAccessor.value.asInstanceOf[Int] foreach (index => {
-        val arrayElemName = DotNotationAccessor(List(instanceName, Expr(index))).stringify
+        val arrayElemName = DotNotationAccessor(List(instanceName, Expr(index))).stringifiedBase
         val arrayElemInstance = instance.instantiation.changedArrayCopy(null).prepareInstance(arrayElemName)
         arrayElemInstance.putInstanceToVisibleAndAll(arrayElemName)
       })

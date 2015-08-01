@@ -358,6 +358,15 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(BigInt(1), (mProjectPP1 \ "firingLimit").values)
     assertEquals(List("-X", true, 0.25), (mProjectPP1 \ "args").values)
 
+    val mProjectPPs0 = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("name", JString("mProjectPPs[0]")) <- process
+    } yield process)(0))
+
+    assertEquals("syscommand", (mProjectPPs0 \ "executor").values)
+    assertEquals(BigInt(1), (mProjectPPs0 \ "firingLimit").values)
+    assertEquals(List("-X", true, 0.25), (mProjectPPs0 \ "args").values)
+
     val mConcatFit = new JObject((for {
       JObject(process) <- json \ "processes"
       JField("name", JString("mConcatFit")) <- process

@@ -17,12 +17,12 @@ import hdsl.compiler.structures.{ProcessInstance, Wf}
 case class CompositionElem(primaryPaths: List[DotNotationAccessor], additional: DotNotationAccessor) {
 
   def isSignalElem() = {
-    primaryPaths.forall(path => Wf.visibleSignalInstances.contains(path.stringify))
+    primaryPaths.forall(path => Wf.visibleSignalInstances.contains(path.stringifiedBase))
   }
 
   def isProcessElem(tmpProcesses: MutableMap[String, ProcessInstance]) = {
-    primaryPaths.forall(path => Wf.visibleProcessInstances.contains(path.stringify)
-      || Wf.processClasses.contains(path.stringify) || tmpProcesses.contains(path.stringify))
+    primaryPaths.forall(path => Wf.visibleProcessInstances.contains(path.stringifiedBase)
+      || Wf.processClasses.contains(path.stringifiedBase) || tmpProcesses.contains(path.stringifiedBase))
   }
 
 }

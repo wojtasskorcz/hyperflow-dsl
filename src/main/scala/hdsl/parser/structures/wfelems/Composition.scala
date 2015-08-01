@@ -62,13 +62,13 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     modifyProcess(processInstance)
 
     signalElem match {
-      case CompositionElem(List(signalName), DotNotationAccessor(parts)) if parts.last == "count" => {
-        val countSignal = createCountSignal(DotNotationAccessor(parts.dropRight(1)).stringify)
-        processInstance.addInput(Wf.visibleSignalInstances(signalName.stringify), s":${countSignal.name}")
+      case CompositionElem(List(signalName), accessor@DotNotationAccessor(parts)) if parts.last == "count" => {
+        val countSignal = createCountSignal(accessor.stringifiedBase)
+        processInstance.addInput(Wf.visibleSignalInstances(signalName.stringifiedBase), s":${countSignal.name}")
       }
       case CompositionElem(signalNames, null) => signalNames.foreach(signalName => {
-        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringify,
-          createSignal(signalName.stringify, processInstance.getNextInSignalClass))
+        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringifiedBase,
+          createSignal(signalName.stringifiedBase, processInstance.getNextInSignalClass))
         processInstance.addInput(signalInstance)
       })
     }
@@ -126,8 +126,8 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
 
     signalElem match {
       case CompositionElem(signalNames, _) => signalNames.foreach(signalName => {
-        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringify,
-          createSignal(signalName.stringify, processInstance.getNextOutSignalClass))
+        val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringifiedBase,
+          createSignal(signalName.stringifiedBase, processInstance.getNextOutSignalClass))
         processInstance.addOutput(signalInstance)
         if (markChoiceSource) {
           signalInstance.choiceSource = Some(processInstance)

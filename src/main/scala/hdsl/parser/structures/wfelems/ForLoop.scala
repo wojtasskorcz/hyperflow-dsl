@@ -19,7 +19,6 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
   private val varsBackup = mutable.MutableList.empty[(MutableMap[String, _], String, Any)]
 
   def execute() = {
-    println("Before creating vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf.variables)
     Wf.checkNameAvailability(loopVar)
     Wf.checkNameAvailability(loopIdx)
     backupVar(loopVar)
@@ -33,9 +32,7 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
       throw new RuntimeException(s"Cannot iterate over $array as it is neither signal nor process array")
     }
 
-    println("With loop vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf.variables)
     restoreBackedUpVars()
-    println("After restoring vars:\n" + Wf.visibleSignalInstances + "\n" + Wf.visibleProcessInstances + "\n" + Wf.variables)
   }
 
   /**
