@@ -20,7 +20,7 @@ mProjectPPs[5].config.executor.args = ["-X", "-x", "0.90682", "2mass-atlas-00112
   "p2mass-atlas-001124n-j0860032.fits", "big_region_20150705_164350_21580.hdr"]
 
 for (proc, idx <- mProjectPPs) {
-  (in[idx], inBigRegion) -> proc -> (atlas[idx], atlasArea[idx])
+  (ins[idx], inBigRegion) -> proc -> (atlases[idx], atlasAreas[idx])
 }
 
 
@@ -53,21 +53,21 @@ mDiffFits[8].config.executor.args = ["-s", "fit.000005.000006.txt", "p2mass-atla
   "p2mass-atlas-001124n-j0860032.fits", "diff.000005.000006.fits", "big_region_20150705_164350_21580.hdr"]
 
 for (proc, idx <- mDiffFits) {
-  (mDiff, mFitplane, atlas[idx/2], atlasArea[idx/2]) -> proc
+  (mDiff, mFitplane, atlases[idx/2], atlasAreas[idx/2]) -> proc
 }
 
-(atlas[1], atlasArea[1]) -> mDiffFits[0]
-(atlas[3], atlasArea[3]) -> mDiffFits[1]
-(atlas[2], atlasArea[2]) -> mDiffFits[2]
-(atlas[3], atlasArea[3]) -> mDiffFits[3]
-(atlas[3], atlasArea[3]) -> mDiffFits[4]
-(atlas[5], atlasArea[5]) -> mDiffFits[5]
-(atlas[4], atlasArea[4]) -> mDiffFits[6]
-(atlas[5], atlasArea[5]) -> mDiffFits[7]
-(atlas[5], atlasArea[5]) -> mDiffFits[8]
+(atlases[1], atlasAreas[1]) -> mDiffFits[0]
+(atlases[3], atlasAreas[3]) -> mDiffFits[1]
+(atlases[2], atlasAreas[2]) -> mDiffFits[2]
+(atlases[3], atlasAreas[3]) -> mDiffFits[3]
+(atlases[3], atlasAreas[3]) -> mDiffFits[4]
+(atlases[5], atlasAreas[5]) -> mDiffFits[5]
+(atlases[4], atlasAreas[4]) -> mDiffFits[6]
+(atlases[5], atlasAreas[5]) -> mDiffFits[7]
+(atlases[5], atlasAreas[5]) -> mDiffFits[8]
 
 for (proc, idx <- mDiffFits) {
-  inBigRegion -> proc -> (fit[idx], diff[idx])
+  inBigRegion -> proc -> (fits[idx], diffs[idx])
 }
 
 
@@ -81,8 +81,8 @@ process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) {
 }
 
 mConcatFit = new MConcatFit()
-statfile -> mConcatFit -> fits
-for (sig <- fit) {
+statfile -> mConcatFit -> allFits
+for (sig <- fits) {
   sig -> mConcatFit
 }
 
@@ -96,7 +96,7 @@ process MBgModel(s1, s2) {
   amqpCommand()
 }
 
-(pimages, fits) -> MBgModel -> corrections
+(pimages, allFits) -> MBgModel -> corrections
 
 
 
@@ -131,12 +131,12 @@ mBackground6 = new MBackground()
 mBackground6.config.executor.args = ["-t", "p2mass-atlas-001124n-j0860032.fits",
   "c2mass-atlas-001124n-j0860032.fits", "pimages_20150705_164350_21580.tbl", "corrections.tbl"]
 
-(atlas[0], atlasArea[0], pimages, corrections) -> mBackground1 -> (mass1, massArea1)
-(atlas[1], atlasArea[1], pimages, corrections) -> mBackground2 -> (mass2, massArea2)
-(atlas[2], atlasArea[2], pimages, corrections) -> mBackground3 -> (mass3, massArea3)
-(atlas[3], atlasArea[3], pimages, corrections) -> mBackground4 -> (mass4, massArea4)
-(atlas[4], atlasArea[4], pimages, corrections) -> mBackground5 -> (mass5, massArea5)
-(atlas[5], atlasArea[5], pimages, corrections) -> mBackground6 -> (mass6, massArea6)
+(atlases[0], atlasAreas[0], pimages, corrections) -> mBackground1 -> (mass1, massArea1)
+(atlases[1], atlasAreas[1], pimages, corrections) -> mBackground2 -> (mass2, massArea2)
+(atlases[2], atlasAreas[2], pimages, corrections) -> mBackground3 -> (mass3, massArea3)
+(atlases[3], atlasAreas[3], pimages, corrections) -> mBackground4 -> (mass4, massArea4)
+(atlases[4], atlasAreas[4], pimages, corrections) -> mBackground5 -> (mass5, massArea5)
+(atlases[5], atlasAreas[5], pimages, corrections) -> mBackground6 -> (mass6, massArea6)
 
 
 
@@ -191,5 +191,5 @@ shrunken -> MJPEG -> shrunkenJpg
 
 
 
-(in[0], inBigRegion, in[1], in[2], in[3], in[4], in[5], mDiff, mFitplane, statfile, pimages, cimages, region) -> workflow
--> (diff[0], diff[1], diff[2], diff[3], diff[4], diff[5], diff[6], diff[7], diff[8], mosaicArea, shrunkenJpg)
+(ins[0], inBigRegion, ins[1], ins[2], ins[3], ins[4], ins[5], mDiff, mFitplane, statfile, pimages, cimages, region) -> workflow
+-> (diffs[0], diffs[1], diffs[2], diffs[3], diffs[4], diffs[5], diffs[6], diffs[7], diffs[8], mosaicArea, shrunkenJpg)
