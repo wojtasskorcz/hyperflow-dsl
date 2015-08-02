@@ -19,8 +19,8 @@ mProjectPPs[4].config.executor.args = ["-X", "-x", "0.90640", "2mass-atlas-00112
 mProjectPPs[5].config.executor.args = ["-X", "-x", "0.90682", "2mass-atlas-001124n-j0860032.fits",
   "p2mass-atlas-001124n-j0860032.fits", "big_region_20150705_164350_21580.hdr"]
 
-for (mProjectPP, idx <- mProjectPPs) {
-  (in[idx], inBigRegion) -> mProjectPP -> (atlas[idx], atlasArea[idx])
+for (proc, idx <- mProjectPPs) {
+  (in[idx], inBigRegion) -> proc -> (atlas[idx], atlasArea[idx])
 }
 
 
@@ -32,51 +32,43 @@ process MDiffFit(s1, s2, s3, s4, s5, s6, s7): (Signal, Signal) {
   amqpCommand()
 }
 
-mDiffFit1 = new MDiffFit()
-mDiffFit1.config.executor.args = ["-s", "fit.000001.000002.txt", "p2mass-atlas-001124n-j0880044.fits",
+mDiffFits = new MDiffFit()[9]
+mDiffFits[0].config.executor.args = ["-s", "fit.000001.000002.txt", "p2mass-atlas-001124n-j0880044.fits",
   "p2mass-atlas-001124n-j0880032.fits", "diff.000001.000002.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit2 = new MDiffFit()
-mDiffFit2.config.executor.args = ["-s", "fit.000001.000004.txt", "p2mass-atlas-001124n-j0880044.fits",
+mDiffFits[1].config.executor.args = ["-s", "fit.000001.000004.txt", "p2mass-atlas-001124n-j0880044.fits",
   "p2mass-atlas-001124n-j0870232.fits", "diff.000001.000004.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit3 = new MDiffFit()
-mDiffFit3.config.executor.args = ["-s", "fit.000002.000003.txt", "p2mass-atlas-001124n-j0880032.fits",
+mDiffFits[2].config.executor.args = ["-s", "fit.000002.000003.txt", "p2mass-atlas-001124n-j0880032.fits",
   "p2mass-atlas-001124n-j0870244.fits", "diff.000002.000003.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit4 = new MDiffFit()
-mDiffFit4.config.executor.args = ["-s", "fit.000002.000004.txt", "p2mass-atlas-001124n-j0880032.fits",
+mDiffFits[3].config.executor.args = ["-s", "fit.000002.000004.txt", "p2mass-atlas-001124n-j0880032.fits",
   "p2mass-atlas-001124n-j0870232.fits", "diff.000002.000004.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit5 = new MDiffFit()
-mDiffFit5.config.executor.args = ["-s", "fit.000003.000004.txt", "p2mass-atlas-001124n-j0870244.fits",
+mDiffFits[4].config.executor.args = ["-s", "fit.000003.000004.txt", "p2mass-atlas-001124n-j0870244.fits",
   "p2mass-atlas-001124n-j0870232.fits", "diff.000003.000004.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit6 = new MDiffFit()
-mDiffFit6.config.executor.args = ["-s", "fit.000003.000006.txt", "p2mass-atlas-001124n-j0870244.fits",
+mDiffFits[5].config.executor.args = ["-s", "fit.000003.000006.txt", "p2mass-atlas-001124n-j0870244.fits",
   "p2mass-atlas-001124n-j0860032.fits", "diff.000003.000006.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit7 = new MDiffFit()
-mDiffFit7.config.executor.args = ["-s", "fit.000004.000005.txt", "p2mass-atlas-001124n-j0870232.fits",
+mDiffFits[6].config.executor.args = ["-s", "fit.000004.000005.txt", "p2mass-atlas-001124n-j0870232.fits",
   "p2mass-atlas-001124n-j0860044.fits", "diff.000004.000005.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit8 = new MDiffFit()
-mDiffFit8.config.executor.args = ["-s", "fit.000004.000006.txt", "p2mass-atlas-001124n-j0870232.fits",
+mDiffFits[7].config.executor.args = ["-s", "fit.000004.000006.txt", "p2mass-atlas-001124n-j0870232.fits",
   "p2mass-atlas-001124n-j0860032.fits", "diff.000004.000006.fits", "big_region_20150705_164350_21580.hdr"]
-
-mDiffFit9 = new MDiffFit()
-mDiffFit9.config.executor.args = ["-s", "fit.000005.000006.txt", "p2mass-atlas-001124n-j0860044.fits",
+mDiffFits[8].config.executor.args = ["-s", "fit.000005.000006.txt", "p2mass-atlas-001124n-j0860044.fits",
   "p2mass-atlas-001124n-j0860032.fits", "diff.000005.000006.fits", "big_region_20150705_164350_21580.hdr"]
 
-(mDiff, mFitplane, atlas[0], atlasArea[0], atlas[1], atlasArea[1], inBigRegion) -> mDiffFit1 -> (fit1, diff1)
-(mDiff, mFitplane, atlas[0], atlasArea[0], atlas[3], atlasArea[3], inBigRegion) -> mDiffFit2 -> (fit2, diff2)
-(mDiff, mFitplane, atlas[1], atlasArea[1], atlas[2], atlasArea[2], inBigRegion) -> mDiffFit3 -> (fit3, diff3)
-(mDiff, mFitplane, atlas[1], atlasArea[1], atlas[3], atlasArea[3], inBigRegion) -> mDiffFit4 -> (fit4, diff4)
-(mDiff, mFitplane, atlas[2], atlasArea[2], atlas[3], atlasArea[3], inBigRegion) -> mDiffFit5 -> (fit5, diff5)
-(mDiff, mFitplane, atlas[2], atlasArea[2], atlas[5], atlasArea[5], inBigRegion) -> mDiffFit6 -> (fit6, diff6)
-(mDiff, mFitplane, atlas[3], atlasArea[3], atlas[4], atlasArea[4], inBigRegion) -> mDiffFit7 -> (fit7, diff7)
-(mDiff, mFitplane, atlas[3], atlasArea[3], atlas[5], atlasArea[5], inBigRegion) -> mDiffFit8 -> (fit8, diff8)
-(mDiff, mFitplane, atlas[4], atlasArea[4], atlas[5], atlasArea[5], inBigRegion) -> mDiffFit9 -> (fit9, diff9)
+for (proc, idx <- mDiffFits) {
+  (mDiff, mFitplane, atlas[idx/2], atlasArea[idx/2]) -> proc
+}
+
+(atlas[1], atlasArea[1]) -> mDiffFits[0]
+(atlas[3], atlasArea[3]) -> mDiffFits[1]
+(atlas[2], atlasArea[2]) -> mDiffFits[2]
+(atlas[3], atlasArea[3]) -> mDiffFits[3]
+(atlas[3], atlasArea[3]) -> mDiffFits[4]
+(atlas[5], atlasArea[5]) -> mDiffFits[5]
+(atlas[4], atlasArea[4]) -> mDiffFits[6]
+(atlas[5], atlasArea[5]) -> mDiffFits[7]
+(atlas[5], atlasArea[5]) -> mDiffFits[8]
+
+for (proc, idx <- mDiffFits) {
+  inBigRegion -> proc -> (fit[idx], diff[idx])
+}
 
 
 
@@ -88,7 +80,7 @@ process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) {
   amqpCommand()
 }
 
-(statfile, fit1, fit2, fit3, fit4, fit5, fit6, fit7, fit8, fit9) -> MConcatFit -> fits
+(statfile, fit[0], fit[1], fit[2], fit[3], fit[4], fit[5], fit[6], fit[7], fit[8]) -> MConcatFit -> fits
 
 
 
@@ -196,4 +188,4 @@ shrunken -> MJPEG -> shrunkenJpg
 
 
 (in[0], inBigRegion, in[1], in[2], in[3], in[4], in[5], mDiff, mFitplane, statfile, pimages, cimages, region) -> workflow
--> (diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9, mosaicArea, shrunkenJpg)
+-> (diff[0], diff[1], diff[2], diff[3], diff[4], diff[5], diff[6], diff[7], diff[8], mosaicArea, shrunkenJpg)

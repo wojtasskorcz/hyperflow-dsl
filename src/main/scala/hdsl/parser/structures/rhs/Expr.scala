@@ -4,7 +4,7 @@ import hdsl.compiler.structures.Wf
 
 case class Expr(value: Any) extends Rhs {
 
-  def evaluate = value match {
+  def evaluate: Any = value match {
     case s: String if isStringLiteral(s) => s.drop(1).dropRight(1)
     case s: String => {
       if (!Wf.variables.contains(s)) {
@@ -12,6 +12,8 @@ case class Expr(value: Any) extends Rhs {
       }
       Wf.variables(s)
     }
+    // TODO more general logic of arithmetic operations
+    case List(exp1: Expr, exp2: Expr) => exp1.evaluate.asInstanceOf[Int] / exp2.evaluate.asInstanceOf[Int]
     case x => x
   }
 

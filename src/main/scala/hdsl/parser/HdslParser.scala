@@ -91,7 +91,13 @@ object HdslParser extends JavaTokenParsers {
         case e: NumberFormatException => Expr(num.toDouble)
       }
     } |
-    ident ^^ { case varName => Expr(varName)}
+    ident ~ potentialDivision ^^ {
+      case varName ~ None => Expr(varName)
+      case varName ~ Some(expr) => Expr(List(Expr(varName), expr))
+    }
+
+  // TODO more general logic of arithmetic operations
+  def potentialDivision: Parser[Option[Expr]] = opt("/" ~> expr)
 
   def exprList: Parser[ExprList] = "[" ~> repsep(expr, ",") <~ "]" ^^ { case exprs => ExprList(exprs)}
 
