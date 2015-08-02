@@ -56,6 +56,7 @@ for (proc, idx <- mDiffFits) {
   (mDiff, mFitplane, atlases[idx/2], atlasAreas[idx/2]) -> proc
 }
 
+// these connections are irregular so we can't do a for-loop over them
 (atlases[1], atlasAreas[1]) -> mDiffFits[0]
 (atlases[3], atlasAreas[3]) -> mDiffFits[1]
 (atlases[2], atlasAreas[2]) -> mDiffFits[2]
