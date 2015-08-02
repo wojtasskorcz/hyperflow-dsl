@@ -80,7 +80,11 @@ process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) {
   amqpCommand()
 }
 
-(statfile, fit[0], fit[1], fit[2], fit[3], fit[4], fit[5], fit[6], fit[7], fit[8]) -> MConcatFit -> fits
+mConcatFit = new MConcatFit()
+statfile -> mConcatFit -> fits
+for (sig <- fit) {
+  sig -> mConcatFit
+}
 
 
 

@@ -15,6 +15,11 @@ case class DotNotationAccessor(parts: List[Any]) {
   require(parts.length > 0)
   require(parts(0).isInstanceOf[String])
 
+  def base: DotNotationAccessor = parts match {
+    case List(name: String, idx: Expr, _*) => DotNotationAccessor(List(name, idx))
+    case List(name: String, _*) => DotNotationAccessor(List(name))
+  }
+
   def stringifiedBase: String = base.parts match {
     case List(simpleName: String) => simpleName
     case List(name: String, idx: Expr) => s"$name[${idx.evaluate}]"
@@ -23,11 +28,6 @@ case class DotNotationAccessor(parts: List[Any]) {
   def resolvedProperties: List[String] = resolve(parts.drop(base.parts.size))
 
   def resolvedParts: List[String] = resolve(parts)
-
-  private def base: DotNotationAccessor = parts match {
-    case List(name: String, idx: Expr, _*) => DotNotationAccessor(List(name, idx))
-    case List(name: String, _*) => DotNotationAccessor(List(name))
-  }
 
   private def resolve(subparts: List[Any]): List[String] = subparts map {
     case s: String => s

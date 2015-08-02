@@ -2,7 +2,7 @@ package hdsl.parser.structures.wfelems
 
 import hdsl.compiler.HdslCompiler
 import hdsl.compiler.structures.{ProcessInstance, SignalInstance, Wf}
-import hdsl.parser.structures.rhs.{ProcessInstantiation, SignalInstantiation}
+import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation, SignalInstantiation}
 import hdsl.parser.structures._
 
 import scala.collection.mutable
@@ -68,7 +68,7 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
       }
       case CompositionElem(signalNames, null) => signalNames.foreach(signalName => {
         val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringifiedBase,
-          createSignal(signalName.stringifiedBase, processInstance.getNextInSignalClass))
+          createSignal(signalName, processInstance.getNextInSignalClass))
         processInstance.addInput(signalInstance)
       })
     }
@@ -127,7 +127,7 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     signalElem match {
       case CompositionElem(signalNames, _) => signalNames.foreach(signalName => {
         val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringifiedBase,
-          createSignal(signalName.stringifiedBase, processInstance.getNextOutSignalClass))
+          createSignal(signalName, processInstance.getNextOutSignalClass))
         processInstance.addOutput(signalInstance)
         if (markChoiceSource) {
           signalInstance.choiceSource = Some(processInstance)
@@ -136,7 +136,12 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     }
   }
 
-  private def createSignal(signalName: String, optSignalClass: Option[SignalClass]): SignalInstance = {
+  /**
+   * signalName may be pure name (e.g. 'someSig') or an array accessor (e.g. 'sigArr[idx]'). In the latter case,
+   * appropriate array is created (along with all its individual signals).
+   */
+  private def createSignal(signalName: DotNotationAccessor, optSignalClass: Option[SignalClass]): SignalInstance = {
+    require(signalName == signalName.base)
     val signalClass = optSignalClass match {
       case Some(signalClass) => signalClass
       case None => throw new RuntimeException(s"Cannot create signal ($signalName)")
@@ -144,9 +149,17 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     if (signalClass.args.nonEmpty) {
       throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} because the class takes arguments")
     }
-    val signalInstance = SignalInstance(signalName, SignalInstantiation(signalClass.name, Nil, null))
-    Wf.putSignalInstance(signalName -> signalInstance)
-    signalInstance
+    val loopIdxVar = Wf.variables.getOrElse("$loopIdxVar", null)
+    val arraySize = signalName.parts.size match {
+      case 1 => null
+      case 2 => signalName.parts(1).asInstanceOf[Expr].value match {
+        case `loopIdxVar` if loopIdxVar != null => Expr(Wf.variables("$arraySize"))
+        case x => throw new RuntimeException(s"Cannot automatically generate array of signals ${signalName} because its index ${signalName.parts(1)} is different from the loop index ${Wf.variables("$loopIdxVar")}")
+      }
+    }
+    val signalInstantiation = SignalInstantiation(signalClass.name, Nil, arraySize)
+    signalInstantiation.instantiate(DotNotationAccessor(List(signalName.parts(0))))
+    Wf.visibleSignalInstances(signalName.stringifiedBase)
   }
 
 }

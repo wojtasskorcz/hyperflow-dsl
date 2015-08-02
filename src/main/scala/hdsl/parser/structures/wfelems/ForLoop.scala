@@ -48,10 +48,13 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
     if (arrayInstance.instantiation.arrayAccessor == null) {
       throw new RuntimeException(s"Cannot iterate over $array as it is not an array")
     }
-    0 until arrayInstance.instantiation.arrayAccessor.value.asInstanceOf[Int] foreach (index => {
+    val arraySize = arrayInstance.instantiation.arrayAccessor.value.asInstanceOf[Int]
+    0 until arraySize foreach (index => {
       val loopVarInstance = typeMap(s"$array[$index]")
       typeMap += loopVar -> loopVarInstance
       Wf.variables += loopIdx -> index
+      Wf.variables += "$loopIdxVar" -> loopIdx
+      Wf.variables += "$arraySize" -> arraySize
       HdslCompiler.secondPass(wfElems)
     })
   }
@@ -79,6 +82,8 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
         collection.asInstanceOf[MutableMap[String, Any]].put(varName, varValue)
       }
     }
+    Wf.variables -= "$loopIdxVar"
+    Wf.variables -= "$arraySize"
   }
 
 }
