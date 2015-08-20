@@ -4,11 +4,11 @@ signal Stations()
 signal DataParts()
 
 process ReadDataSets(x: XmlData, c: Config): Stations {
-  genXmlCollection(x, c)
+  genXmlCollection()
 }
 
 process PartitionData(s: Stations): DataParts {
-  partitionData(s)
+  partitionData()
 }
 
 process ComputeStats(d: DataParts, c: sticky Config) {
