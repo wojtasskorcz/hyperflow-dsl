@@ -2,7 +2,7 @@ package hdsl.compiler.structures
 
 import hdsl.MutableMap
 import hdsl.parser.structures.Arg
-import hdsl.parser.structures.rhs.{Expr, SignalInstantiation}
+import hdsl.parser.structures.rhs.{ExprList, Expr, SignalInstantiation}
 import hdsl.parser.structures.traits.Instantiated
 
 import scala.collection.mutable
@@ -33,6 +33,7 @@ case class SignalInstance(name: String, instantiation: SignalInstantiation) exte
       case (_, null) => throw new RuntimeException(
         s"Cannot instantiate signal $name. Too few arguments for class ${signalClass.name}")
       case (Arg(_, "String", _), Expr(s: String)) => "OK"
+      case (Arg(_, "Array", _), _: ExprList) => "OK"
       case (Arg(argName, argType, _), Expr(value: Any)) => throw new RuntimeException(
         s"Cannot instantiate signal $name. $value cannot be passed to argument $argName of type $argType")
     })
@@ -46,14 +47,16 @@ case class SignalInstance(name: String, instantiation: SignalInstantiation) exte
 
     def argumentsMap: MutableMap[String, Any] = {
       val immutableMap: Map[String, Any] = signalClass.args.zip(instantiation.args).map({
-        case (arg, value) => arg.name -> value.evaluate
+        case (arg, value: Expr) => arg.name -> value.evaluate
+        case (arg, value: ExprList) => arg.name -> value.parts.map(expr => expr.evaluate)
       }).toMap
       collection.mutable.Map(immutableMap.toSeq: _*)
     }
 
     val outMap = mutable.Map[String, Any]("name" -> name)
     if (signalClass.control.nonEmpty) outMap += "control" -> signalClass.control.get
-    if (argumentsMap.nonEmpty) outMap += "data" -> List(argumentsMap)
+    // if signal class declared as ClassName(:argType), assign directly to 'data' property, otherwise create map within 'data'
+    if (argumentsMap.nonEmpty) outMap += "data" -> (if (signalClass.args(0).name == null) argumentsMap(null) else List(argumentsMap))
     outMap
   }
 

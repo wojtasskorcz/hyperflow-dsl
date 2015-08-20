@@ -5,7 +5,7 @@ import java.io.InputStreamReader
 import hdsl.compiler.HdslCompiler
 import hdsl.parser.HdslParser
 import hdsl.test.UnitSpec
-import org.json4s.JsonAST.{JField, JObject, JString}
+import org.json4s.JsonAST._
 import org.json4s.{JValue, NoTypeHints}
 import org.json4s.native.JsonMethods._
 import org.json4s.native.{Json, Serialization}
@@ -55,7 +55,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     val (pOutSignal, pCountSignalName) = (pOutSignalParts(0), pOutSignalParts(1))
     assertEquals("stations", pOutSignal)
     ensureSignal("stations", json)
-    ensureSignal(pCountSignalName, json, Map("control" -> new JString("count")))
+    ensureSignal(pCountSignalName, json, Map("control" -> JString("count")))
 
     val partitionData = new JObject((for {
       JObject(process) <- json \ "processes"
@@ -137,7 +137,7 @@ class HdslCompilerUnitTest extends UnitSpec {
       psOuts :+= pOutSignal
       psCounts :+= pCountSignalName
       ensureSignal(pOutSignal, json)
-      ensureSignal(pCountSignalName, json, Map("control" -> new JString("count")))
+      ensureSignal(pCountSignalName, json, Map("control" -> JString("count")))
     })
 
     assertEquals(n, ps.size)
@@ -230,7 +230,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(List("branch1", "branch2", "branch3"), generateBranchesOuts.take(3))
     List("branch1", "branch2", "branch3").foreach(signal => ensureSignal(signal, json))
     val mergeSignalName = generateBranchesOuts(3)
-    ensureSignal(mergeSignalName, json, Map("control" -> new JString("merge")))
+    ensureSignal(mergeSignalName, json, Map("control" -> JString("merge")))
     assertEquals("choice", (generateBranches \ "type").values)
 
     val echos: List[JObject] = (for {
@@ -312,7 +312,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     val generateBranchesIns = (generateBranches \ "ins").values.asInstanceOf[List[String]]
     assertEquals(1, generateBranchesIns.size)
     val nextSignalName = generateBranchesIns(0)
-    ensureSignal(nextSignalName, json, Map("control" -> new JString("next")))
+    ensureSignal(nextSignalName, json, Map("control" -> JString("next")))
     assertEquals("choice", (generateBranches \ "type").values)
 
     val echos: List[JObject] = (for {
@@ -375,6 +375,11 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(List("x", false, 3), (mConcatFit \ "config" \ "executor" \ "args").values)
   }
 
+  test("That sqrsum workflow is properly compiled") {
+    val json = compileWorkflow("/sqrsum.hdsl")
+    ensureSignal("number", json, Map("data" -> JArray(List(JInt(1), JInt(2), JInt(3), JInt(4), JInt(5), JInt(6)))))
+  }
+
   private def compileWorkflow(filename: String): JValue = {
     val parsingResult = HdslParser.parseAll(HdslParser.workflow,
       new InputStreamReader(getClass.getResourceAsStream(filename)))
@@ -383,7 +388,7 @@ class HdslCompilerUnitTest extends UnitSpec {
     }
     assert(parsingResult.successful)
     val outMap = HdslCompiler.compile(parsingResult.get)
-    return parse(write(outMap))
+    parse(write(outMap))
   }
 
   private def ensureSignal(name: String, json: JValue, requiredParams: Map[String, JValue] = Map.empty) = {

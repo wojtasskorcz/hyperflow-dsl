@@ -5,6 +5,6 @@ package hdsl.parser.structures.rhs
  * SignalInstantiation. After resolving by the compile to the appropriate concrete Instantiation class this class is not
  * used anymore.
  */
-case class UndefinedInstantiation(className: String, args: List[Expr], arrayAccessor: Expr) extends Rhs {
+case class UndefinedInstantiation(className: String, args: List[Rhs], arrayAccessor: Expr) extends Rhs {
 
 }

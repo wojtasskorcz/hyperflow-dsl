@@ -1,0 +1,5 @@
+signal NumberGenerator(: Array)
+signal Squares()
+signal Sums()
+
+number = new NumberGenerator([1, 2, 3, 4, 5, 6])

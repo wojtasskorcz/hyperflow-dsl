@@ -16,11 +16,12 @@ object HdslParser extends JavaTokenParsers {
     case name ~ args => SignalClass(name, args)
   }
 
-  def signalClassArgs: Parser[List[Arg]] = repsep(signalClassArg, ",") ^^ (List() ++ _)
+  def signalClassArgs: Parser[List[Arg]] = ":" ~> signalClassArgType ^^ { case argType => List(Arg(null, argType, Nil))} |
+    repsep(signalClassArg, ",") ^^ (List() ++ _)
 
   def signalClassArg: Parser[Arg] = ident ~ ":" ~ signalClassArgType ^^ { case name ~ ":" ~ argType => Arg(name, argType, Nil)}
 
-  def signalClassArgType: Parser[String] = "String"
+  def signalClassArgType: Parser[String] = "String" | "Array"
 
   def processClass: Parser[ProcessClass] =
     "process" ~> ident ~ ("(" ~> processClassArgs <~ ")") ~ opt(":" ~> processClassOutArgs) ~ ("{" ~> processBody <~ "}") ^^ {
@@ -75,7 +76,7 @@ object HdslParser extends JavaTokenParsers {
 
   def rhs: Parser[Rhs] = processOrSignalInstantiation | expr | exprList
 
-  def processOrSignalInstantiation: Parser[UndefinedInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
+  def processOrSignalInstantiation: Parser[UndefinedInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr | exprList, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
     case className ~ args ~ Some(expr) => UndefinedInstantiation(className, args, expr)
     case className ~ args ~ None => UndefinedInstantiation(className, args, null)
   }
