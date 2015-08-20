@@ -14,7 +14,7 @@ import hdsl.compiler.structures.{ProcessInstance, Wf}
  * - '(dataPartsArr[idx], config)' tuple of indexed signals or processes; each element of `nameIndices` list
  * corresponds to each element of `names`
  */
-case class CompositionElem(primaryPaths: List[DotNotationAccessor], additional: DotNotationAccessor) {
+case class CompositionElem(primaryPaths: List[DotNotationAccessor], additional: Either[DotNotationAccessor, Int]) {
 
   def isSignalElem() = {
     primaryPaths.forall(path => Wf.visibleSignalInstances.contains(path.stringifiedBase))

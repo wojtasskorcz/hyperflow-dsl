@@ -77,8 +77,7 @@ object HdslParser extends JavaTokenParsers {
   def rhs: Parser[Rhs] = processOrSignalInstantiation | expr | exprList
 
   def processOrSignalInstantiation: Parser[UndefinedInstantiation] = "new" ~> ident ~ ("(" ~> repsep(expr | exprList, ",") <~ ")") ~ opt(arrayAccessor) ^^ {
-    case className ~ args ~ Some(expr) => UndefinedInstantiation(className, args, expr)
-    case className ~ args ~ None => UndefinedInstantiation(className, args, null)
+    case className ~ args ~ optExpr => UndefinedInstantiation(className, args, optExpr.orNull)
   }
 
   def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |
@@ -110,8 +109,10 @@ object HdslParser extends JavaTokenParsers {
 
   def conjunctedElem: Parser[(Conjunction, CompositionElem)] = conjunction ~ compositionElem ^^ {case conj ~ elem => (conj, elem)}
 
-  def compositionElem: Parser[CompositionElem] = dotNotationPath ~ opt(":" ~> dotNotationPath) ^^ {
-    case primaryPath ~ additionalPath => CompositionElem(List(primaryPath), additionalPath.orNull)
+  def compositionElem: Parser[CompositionElem] = dotNotationPath ~ opt(":" ~> (dotNotationPath | wholeNumber)) ^^ {
+    case primaryPath ~ None => CompositionElem(List(primaryPath), null)
+    case primaryPath ~ Some(accessor: DotNotationAccessor) => CompositionElem(List(primaryPath), Left(accessor))
+    case primaryPath ~ Some(num: String) => CompositionElem(List(primaryPath), Right(num.toInt))
   } |
     "(" ~> rep1sep(dotNotationPath, ",") <~ ")" ^^ {
       case primaryPaths => CompositionElem(primaryPaths, null)

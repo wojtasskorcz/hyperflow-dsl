@@ -378,6 +378,13 @@ class HdslCompilerUnitTest extends UnitSpec {
   test("That sqrsum workflow is properly compiled") {
     val json = compileWorkflow("/sqrsum.hdsl")
     ensureSignal("number", json, Map("data" -> JArray(List(JInt(1), JInt(2), JInt(3), JInt(4), JInt(5), JInt(6)))))
+
+    val sum = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("function", JString("sum")) <- process
+    } yield process)(0))
+
+    assertEquals(List("square:3"), (sum \ "ins").values)
   }
 
   private def compileWorkflow(filename: String): JValue = {

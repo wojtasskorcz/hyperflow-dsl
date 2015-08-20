@@ -62,9 +62,12 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
     modifyProcess(processInstance)
 
     signalElem match {
-      case CompositionElem(List(signalName), accessor@DotNotationAccessor(parts)) if parts.last == "count" => {
+      case CompositionElem(List(signalName), Left(accessor@DotNotationAccessor(parts))) if parts.last == "count" => {
         val countSignal = createCountSignal(accessor.stringifiedBase)
         processInstance.addInput(Wf.visibleSignalInstances(signalName.stringifiedBase), s":${countSignal.name}")
+      }
+      case CompositionElem(List(signalName), Right(num)) => {
+        processInstance.addInput(Wf.visibleSignalInstances(signalName.stringifiedBase), s":$num")
       }
       case CompositionElem(signalNames, null) => signalNames.foreach(signalName => {
         val signalInstance = Wf.visibleSignalInstances.getOrElse(signalName.stringifiedBase,

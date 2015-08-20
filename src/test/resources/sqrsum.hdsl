@@ -2,4 +2,17 @@ signal NumberGenerator(: Array)
 signal Squares()
 signal Sums()
 
+process Sqr(nums: NumberGenerator): Squares {
+  parlevel = 0
+  ordering = "true"
+  sqr()
+}
+
+process Sum(sqrs: Squares): Sums {
+  sum()
+}
+
 number = new NumberGenerator([1, 2, 3, 4, 5, 6])
+number -> Sqr -> square:3 -> Sum -> sum
+
+number -> workflow -> sum
