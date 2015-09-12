@@ -6,7 +6,7 @@ var pAtlasPrefix = "p" + atlasPrefix
 var cAtlasPrefix = "c" + atlasPrefix
 var correctionsFilename = "corrections.tbl"
 
-process MProjectPP(s1, s2): (Signal, Signal) {
+process MProjectPP(s1, s2): (s3, s4) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mProjectPP"
@@ -33,7 +33,7 @@ for (proc, idx <- mProjectPPs) {
 
 
 
-process MDiffFit(s1, s2, s3, s4, s5, s6, s7): (Signal, Signal) {
+process MDiffFit(s1, s2, s3, s4, s5, s6, s7): (s8, s9) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mDiffFit"
@@ -81,7 +81,7 @@ for (proc, idx <- mDiffFits) {
 
 
 
-process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) {
+process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10): (s11) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mConcatFit"
@@ -97,7 +97,7 @@ for (sig <- fits) {
 
 
 
-process MBgModel(s1, s2) {
+process MBgModel(s1, s2): (s3) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mBgModel"
@@ -109,7 +109,7 @@ process MBgModel(s1, s2) {
 
 
 
-process MBackground(s1, s2, s3, s4): (Signal, Signal) {
+process MBackground(s1, s2, s3, s4): (s5, s6) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mBackground"
@@ -136,7 +136,7 @@ for (proc, idx <- mBackgrounds) {
 
 
 
-process MImgtbl(s1, s2, s3, s4, s5, s6, s7) {
+process MImgtbl(s1, s2, s3, s4, s5, s6, s7): (s8) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mImgtbl"
@@ -152,7 +152,7 @@ for (sig <- masses) {
 
 
 
-process MAdd(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14): (Signal, Signal) {
+process MAdd(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14): (s15, s16) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mAdd"
@@ -168,7 +168,7 @@ for (sig, idx <- masses) {
 
 
 
-process MShrink(s) {
+process MShrink(s1): (s2) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mShrink"
@@ -180,7 +180,7 @@ mosaic -> MShrink -> shrunken
 
 
 
-process MJPEG(s) {
+process MJPEG(s1): (s2) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mJPEG"
