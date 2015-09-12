@@ -28,14 +28,11 @@ case class SignalInstance(name: String, instantiation: SignalInstantiation) exte
 
   private def checkArgsCompatibility() = {
     signalClass.args.zipAll(instantiation.args, null, null).foreach({
-      case (null, _) => throw new RuntimeException(
-        s"Cannot instantiate signal $name. Too many arguments for class ${signalClass.name}")
-      case (_, null) => throw new RuntimeException(
-        s"Cannot instantiate signal $name. Too few arguments for class ${signalClass.name}")
-      case (Arg(_, "String", _), Expr(s: String)) => "OK"
+      case (null, _) => throw new RuntimeException(s"Cannot instantiate signal $name. Too many arguments for class ${signalClass.name}")
+      case (_, null) => throw new RuntimeException(s"Cannot instantiate signal $name. Too few arguments for class ${signalClass.name}")
+      case (Arg(_, "String", _), expr: Expr) => if (expr.evaluate.isInstanceOf[String]) "OK" else throw new RuntimeException(s"Cannot instantiate signal $name. Expression $expr does not evaluate to the require type 'String'")
       case (Arg(_, "Array", _), _: ExprList) => "OK"
-      case (Arg(argName, argType, _), Expr(value: Any)) => throw new RuntimeException(
-        s"Cannot instantiate signal $name. $value cannot be passed to argument $argName of type $argType")
+      case (Arg(argName, argType, _), Expr(value: Any)) => throw new RuntimeException(s"Cannot instantiate signal $name. $value cannot be passed to argument $argName of type $argType")
     })
   }
 

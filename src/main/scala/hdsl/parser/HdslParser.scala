@@ -80,10 +80,7 @@ object HdslParser extends JavaTokenParsers {
     case className ~ args ~ optExpr => UndefinedInstantiation(className, args, optExpr.orNull)
   }
 
-  def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |
-    "false" ^^ { case _ => Expr(false)} |
-    stringLiteral ^^ { case str => Expr(str)} |
-    floatingPointNumber ^^ {
+  def numericExpr: Parser[Expr] = floatingPointNumber ^^ {
       // try to convert to integer; if not possible - convert to double
       case num => try {
         Expr(num.toInt)
@@ -96,12 +93,21 @@ object HdslParser extends JavaTokenParsers {
       case varName ~ Some(expr) => Expr(List(Expr(varName), expr))
     }
 
+  def expr: Parser[Expr] = "true" ^^ { case _ => Expr(true)} |
+    "false" ^^ { case _ => Expr(false)} |
+    concatenatedString |
+    numericExpr
+
+  def concatenatedString: Parser[Expr] = rep1sep(stringLiteral | ident, "+") ^^ {
+    case concatenationParts => Expr(concatenationParts)
+  }
+
   // TODO more general logic of arithmetic operations
   def potentialDivision: Parser[Option[Expr]] = opt("/" ~> expr)
 
   def exprList: Parser[ExprList] = "[" ~> repsep(expr, ",") <~ "]" ^^ { case exprs => ExprList(exprs)}
 
-  def arrayAccessor: Parser[Expr] = "[" ~> expr <~ "]"
+  def arrayAccessor: Parser[Expr] = "[" ~> numericExpr <~ "]"
 
   def composition: Parser[Composition] = compositionElem ~ rep1(conjunctedElem) ^^ {
     case elem ~ conjsAndElems => Composition(elem :: conjsAndElems.map(_._2), conjsAndElems.map(_._1))
