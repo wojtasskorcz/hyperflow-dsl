@@ -1,10 +1,9 @@
 package hdsl.compiler.structures
 
 import hdsl._
-import hdsl.parser.structures.Arg
-import hdsl.parser.structures.rhs.{Expr, ProcessInstantiation}
-import hdsl.parser.structures.traits.{Instantiated, PropertyContainer}
-import hdsl.parser.structures.wfelems.{SignalClass, ProcessClass}
+import hdsl.parser.structures.rhs.ProcessInstantiation
+import hdsl.parser.structures.traits.Instantiated
+import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
 
 import scala.collection.mutable
 
@@ -12,7 +11,7 @@ import scala.collection.mutable
  * `name` is the name of the instance that will be set in generated JSON (may be sth like `anonymous$12` or `pArr$0[3]`
  * it is NOT the name of the identifier (variable) this process instance is assigned to
  */
-case class ProcessInstance(name: String, instantiation: ProcessInstantiation) extends PropertyContainer with Instantiated {
+case class ProcessInstance(name: String, instantiation: ProcessInstantiation) extends Instantiated {
 
   final val processClass = Wf.processClasses.get(instantiation.className) match {
     case Some(processClass: ProcessClass) => processClass
@@ -22,8 +21,8 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
 
   addAllProperties(processClass)
 
-  val ins = mutable.MutableList.empty[String]
-  val outs = mutable.MutableList.empty[String]
+  val ins = mutable.MutableList.empty[(SignalInstance, String)]
+  val outs = mutable.MutableList.empty[(SignalInstance, String)]
   val sticky = mutable.MutableList.empty[String]
   var choiceSource: Option[ProcessInstance] = None
   var processType = "dataflow"
@@ -39,8 +38,8 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
     val outMap = mutable.Map[String, Any]("name" -> name, "function" -> processClass.function)
     outMap ++= resolvedPropertiesMap()
     outMap += "type" -> processType
-    outMap += "ins" -> ins
-    outMap += "outs" -> outs
+    outMap += "ins" -> ProcessInstance.signalsToJson(ins)
+    outMap += "outs" -> ProcessInstance.signalsToJson(outs)
     if (sticky.nonEmpty) outMap += "sticky" -> sticky
     if (joinCount.nonEmpty) {
       outMap += "joinCount" -> joinCount.get
@@ -55,7 +54,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
       // if it's not a control signal, we have to check if it adheres to the process class signature
       if (signal.signalClass.control.isEmpty) {
         if (ins.size == processClass.args.size) {
-          throw new RuntimeException(s"Cannot add signal ${signal.name} as input to process ${name}. Too many inputs.")
+          throw new RuntimeException(s"Cannot add signal ${signal.name} as input to process $name. Too many inputs.")
         }
         val inputArg = processClass.args(ins.size)
         if (signal.signalClass.name != inputArg.argType) {
@@ -78,7 +77,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
         }
       }
     }
-    ins += signal.name + suffix
+    ins += ((signal, suffix))
   }
 
   def addOutput(signal: SignalInstance) = {
@@ -91,7 +90,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
         signal.choiceSource = choiceSource
       }
     }
-    outs += signal.name
+    outs += ((signal, ""))
   }
 
   def getNextOutSignalClass: Option[SignalClass] =
@@ -106,7 +105,27 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
 
   def computeActiveBranchesCount() = {
     activeBranchesCount = Some(Wf.allSignalInstances.count(
-      signalInstance => ins.contains(signalInstance.name) && signalInstance.choiceSource == choiceSource))
+      signalInstance => ins.exists { case (signal, suffix) => signal.name == signalInstance.name } && signalInstance.choiceSource == choiceSource))
   }
 
+  override def getProperty(propertyName: String): Option[Any] = {
+    def getAttachedInput(propertyName: String): Option[SignalInstance] = processClass.args.indexWhere(arg => arg.name == propertyName) match {
+      case -1 => None
+      case idx => Some(ins(idx)._1)
+    }
+
+    val containerProperty = super.getProperty(propertyName)
+    if (containerProperty.isDefined) {
+      containerProperty
+    } else {
+      getAttachedInput(propertyName)
+    }
+  }
+
+}
+
+object ProcessInstance {
+  def signalsToJson(signals: MutableList[(SignalInstance, String)]): MutableList[String] = {
+    signals.map{ case (signal, suffix) => signal.name + suffix }
+  }
 }

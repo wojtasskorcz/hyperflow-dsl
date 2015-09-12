@@ -93,19 +93,23 @@ object HdslCompiler {
 
   def secondPass(wfElems: List[WfElem]): Unit = {
 
-    def setProcessProperty(accessor: DotNotationAccessor, rhs: Rhs) = {
-      Wf.visibleProcessInstances.get(accessor.stringifiedBase) match {
-        case Some(processInstance) => processInstance.setProperty(accessor.resolvedProperties, rhs)
-        case None => throw new RuntimeException(
-          s"cannot set property ${accessor.resolvedProperties} as ${accessor.stringifiedBase} is not defined")
+    def setProperty(accessor: DotNotationAccessor, rhs: Rhs) = {
+      Wf.getInstance(accessor.stringifiedBase) match {
+        case Some(instance) => instance.setProperty(accessor.resolvedProperties, rhs)
+        case None => throw new RuntimeException(s"cannot set property ${accessor.resolvedProperties} as ${accessor.stringifiedBase} is not defined")
       }
+    }
+
+    def prepareProcessClass(processClass: ProcessClass) = {
+      processClass.evaluateProperties()
+      Wf.putProcessClass(processClass.name -> processClass)
     }
 
     wfElems.foreach({
       case signalClass: SignalClass => Wf.putSignalClass(signalClass.name -> signalClass)
-      case processClass: ProcessClass => Wf.putProcessClass(processClass.name -> processClass)
+      case processClass: ProcessClass => prepareProcessClass(processClass)
       case WfElemAssignment(lhs, rhs: Instantiation) => rhs.instantiate(lhs)
-      case WfElemAssignment(lhs, rhs) => setProcessProperty(lhs, rhs)
+      case WfElemAssignment(lhs, rhs) => setProperty(lhs, rhs)
       case VarAssignment(varName, rhs: Expr) => Wf.putVariable(varName -> rhs.evaluate)
       case c: Composition => c.compose()
       case forLoop: ForLoop => forLoop.execute()
@@ -140,8 +144,8 @@ object HdslCompiler {
     val outMap = mutable.Map.empty[String, Any]
     outMap += "processes" -> Wf.allProcessInstances.filterNot(_.name == "workflow").map(_.toMap)
     outMap += "signals" -> Wf.allSignalInstances.map(instance => instance.toMap)
-    outMap += "ins" -> Wf.visibleProcessInstances("workflow").ins
-    outMap += "outs" -> Wf.visibleProcessInstances("workflow").outs
+    outMap += "ins" -> ProcessInstance.signalsToJson(Wf.visibleProcessInstances("workflow").ins)
+    outMap += "outs" -> ProcessInstance.signalsToJson(Wf.visibleProcessInstances("workflow").outs)
     outMap
   }
 

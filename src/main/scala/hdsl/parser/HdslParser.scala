@@ -98,7 +98,7 @@ object HdslParser extends JavaTokenParsers {
     concatenatedString |
     numericExpr
 
-  def concatenatedString: Parser[Expr] = rep1sep(stringLiteral | ident, "+") ^^ {
+  def concatenatedString: Parser[Expr] = rep1sep(stringLiteral | dotNotationPath, "+") ^^ {
     case concatenationParts => Expr(concatenationParts)
   }
 

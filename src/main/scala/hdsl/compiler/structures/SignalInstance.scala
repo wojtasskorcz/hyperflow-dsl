@@ -3,7 +3,7 @@ package hdsl.compiler.structures
 import hdsl.MutableMap
 import hdsl.parser.structures.Arg
 import hdsl.parser.structures.rhs.{ExprList, Expr, SignalInstantiation}
-import hdsl.parser.structures.traits.Instantiated
+import hdsl.parser.structures.traits.{PropertyContainer, Instantiated}
 
 import scala.collection.mutable
 

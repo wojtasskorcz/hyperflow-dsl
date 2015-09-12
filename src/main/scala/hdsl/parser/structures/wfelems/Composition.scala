@@ -86,16 +86,17 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
   }
 
   private def createCountSignal(countSourceSignalName: String): SignalInstance = {
-    val countSourceProcesses = Wf.allProcessInstances.filter(processInstance => processInstance.outs.contains
-      (countSourceSignalName))
+    val countSourceProcesses = Wf.allProcessInstances.filter(processInstance => processInstance.outs.exists {
+      case (signal, suffix) => signal.name == countSourceSignalName
+    })
     if (countSourceProcesses.length != 1) {
       throw new RuntimeException(s"Could not uniquely find a process, which could be the source of count signal $countSourceSignalName. Number of processes found: ${countSourceProcesses.length}")
     }
     val countSourceProcess = countSourceProcesses(0)
     val signalInstance = createAnonymousSignal(Wf.signalClasses(HdslCompiler.countSignalClassName))
-    countSourceProcess.outs.transform(
-      outSignal => if (outSignal == countSourceSignalName) s"$outSignal:${signalInstance.name}" else outSignal
-    )
+    countSourceProcess.outs.transform {
+      case (signal, _) => if (signal.name == countSourceSignalName) (signal, ":" + signalInstance.name) else (signal, "")
+    }
     signalInstance
   }
 
@@ -145,10 +146,7 @@ case class Composition(elems: List[CompositionElem], conjs: List[Conjunction]) e
    */
   private def createSignal(signalName: DotNotationAccessor, optSignalClass: Option[SignalClass]): SignalInstance = {
     require(signalName == signalName.base)
-    val signalClass = optSignalClass match {
-      case Some(signalClass) => signalClass
-      case None => throw new RuntimeException(s"Cannot create signal ($signalName)")
-    }
+    val signalClass = optSignalClass.getOrElse(throw new RuntimeException(s"Cannot create signal ($signalName)"))
     if (signalClass.args.nonEmpty) {
       throw new RuntimeException(s"Cannot automatically generate signal $signalName of class ${signalClass.name} because the class takes arguments")
     }

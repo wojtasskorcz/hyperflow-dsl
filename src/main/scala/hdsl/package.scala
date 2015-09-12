@@ -4,4 +4,6 @@ package object hdsl {
 
   type MutableSet[K] = scala.collection.mutable.Set[K]
 
+  type MutableList[K] = scala.collection.mutable.MutableList[K]
+
 }

@@ -7,9 +7,17 @@ import scala.collection.mutable
 
 trait PropertyContainer {
 
-  private val flatProperties = mutable.Map.empty[List[String], Any]
+  protected val flatProperties = mutable.Map.empty[List[String], Any]
 
-  def setProperty(path: List[String], rhs: Rhs) = flatProperties += path -> rhs
+  def setProperty(path: List[String], rhs: Rhs) = {
+    def evaluate(rhs: Rhs): Any = rhs match {
+      case expr: Expr => expr.evaluate
+      case exprList: ExprList => exprList.parts.map(expr => expr.evaluate)
+      case otherValue: Any => throw new RuntimeException("Only Expr or List[Expr] should be stored as properties")
+    }
+
+    flatProperties += path -> evaluate(rhs)
+  }
 
   def addAllProperties(sourceContainer: PropertyContainer) = flatProperties ++= sourceContainer.flatProperties
 
@@ -17,11 +25,7 @@ trait PropertyContainer {
 
     def recursivelySetProperty(path: List[String], rhs: Any, targetMap: MutableMap[String, Any]): Unit = {
       path match {
-        case List(lastProperty) => rhs match {
-          case expr: Expr => targetMap.put(lastProperty, expr.evaluate)
-          case exprList: ExprList => targetMap.put(lastProperty, exprList.parts.map(expr => expr.evaluate))
-          case otherValue: Any => throw new RuntimeException("Only Expr or List[Expr] should be stored as properties")
-        }
+        case List(lastProperty) => targetMap.put(lastProperty, rhs)
         case longerList => {
           val innerMap = targetMap.get(longerList(0)) match {
             case Some(innerMap: MutableMap[_, _]) => innerMap.asInstanceOf[MutableMap[String, Any]]
@@ -39,6 +43,10 @@ trait PropertyContainer {
     val propertiesMap = mutable.Map.empty[String, Any]
     flatProperties foreach { case (path, value) => recursivelySetProperty(path, value, propertiesMap)}
     propertiesMap
+  }
+
+  def getProperty(name: String): Option[Any] = {
+    resolvedPropertiesMap().get(name)
   }
 
 }

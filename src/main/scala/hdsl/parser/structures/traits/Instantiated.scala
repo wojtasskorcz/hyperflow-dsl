@@ -1,6 +1,6 @@
 package hdsl.parser.structures.traits
 
-trait Instantiated {
+trait Instantiated extends PropertyContainer {
 
   def name: String
   def instantiation: Instantiation

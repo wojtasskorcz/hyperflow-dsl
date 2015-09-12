@@ -1,4 +1,4 @@
-var timestamp = "20150705_164350_21580"
+var timestamp = "20150912_115742_24534"
 var bigRegionFilename = "big_region_" + timestamp + ".hdr"
 var pimagesFilename = "pimages_" + timestamp + ".tbl"
 var atlasPrefix = "2mass-atlas-001124n-"
@@ -6,7 +6,7 @@ var pAtlasPrefix = "p" + atlasPrefix
 var cAtlasPrefix = "c" + atlasPrefix
 var correctionsFilename = "corrections.tbl"
 
-process MProjectPP(s1, s2): (Signal, Signal) {
+process MProjectPP(in, bigRegion): (Signal, Signal) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mProjectPP"
@@ -14,21 +14,27 @@ process MProjectPP(s1, s2): (Signal, Signal) {
 }
 
 mProjectPPs = new MProjectPP()[6]
-mProjectPPs[0].config.executor.args = ["-X", "-x", "0.90423", atlasPrefix + "j0880044.fits",
-  pAtlasPrefix + "j0880044.fits", bigRegionFilename]
-mProjectPPs[1].config.executor.args = ["-X", "-x", "0.90465", atlasPrefix + "j0880032.fits",
-  pAtlasPrefix + "j0880032.fits", bigRegionFilename]
-mProjectPPs[2].config.executor.args = ["-X", "-x", "0.90448", atlasPrefix + "j0870244.fits",
-  pAtlasPrefix + "j0870244.fits", bigRegionFilename]
-mProjectPPs[3].config.executor.args = ["-X", "-x", "0.90415", atlasPrefix + "j0870232.fits",
-  pAtlasPrefix + "j0870232.fits", bigRegionFilename]
-mProjectPPs[4].config.executor.args = ["-X", "-x", "0.90640", atlasPrefix + "j0860044.fits",
-  pAtlasPrefix + "j0860044.fits", bigRegionFilename]
-mProjectPPs[5].config.executor.args = ["-X", "-x", "0.90682", atlasPrefix + "j0860032.fits",
-  pAtlasPrefix + "j0860032.fits", bigRegionFilename]
+ins = new Signal()[6]
+ins[0].xVal = "0.90423"
+ins[0].fits = "j0880044"
+ins[1].xVal = "0.90448"
+ins[1].fits = "j0870244"
+ins[2].xVal = "0.90448"
+ins[2].fits = "j0870244"
+ins[3].xVal = "0.90415"
+ins[3].fits = "j0870232"
+ins[4].xVal = "0.90640"
+ins[4].fits = "j0860044"
+ins[5].xVal = "0.90682"
+ins[5].fits = "j0860032"
+
+inBigRegion = new Signal()
+inBigRegion.filename = "big_region_" + timestamp + ".hdr"
 
 for (proc, idx <- mProjectPPs) {
   (ins[idx], inBigRegion) -> proc -> (atlases[idx], atlasAreas[idx])
+  proc.config.executor.args = ["-X", "-x", proc.in.xVal, atlasPrefix + proc.in.fits + ".fits",
+    pAtlasPrefix + proc.in.fits + ".fits", proc.bigRegion.filename]
 }
 
 

@@ -375,6 +375,20 @@ class HdslCompilerUnitTest extends UnitSpec {
     assertEquals(List("x", false, 3), (mConcatFit \ "config" \ "executor" \ "args").values)
   }
 
+  test("That montagev3 workflow is properly compiled") {
+    val json = compileWorkflow("/montagev3.hdsl")
+
+    val mProjectPPs0 = new JObject((for {
+      JObject(process) <- json \ "processes"
+      JField("name", JString("mProjectPPs[0]")) <- process
+    } yield process)(0))
+
+    assertEquals("syscommand", (mProjectPPs0 \ "executor").values)
+    assertEquals(BigInt(1), (mProjectPPs0 \ "firingLimit").values)
+    assertEquals(List("-X", "-x", "0.90423", "2mass-atlas-001124n-j0880044.fits", "p2mass-atlas-001124n-j0880044.fits",
+      "big_region_20150912_115742_24534.hdr"), (mProjectPPs0 \ "config" \ "executor" \ "args").values)
+  }
+
   test("That sqrsum workflow is properly compiled") {
     val json = compileWorkflow("/sqrsum.hdsl")
     ensureSignal("number", json, Map("data" -> JArray(List(JInt(1), JInt(2), JInt(3), JInt(4), JInt(5), JInt(6)))))

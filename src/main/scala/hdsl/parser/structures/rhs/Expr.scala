@@ -1,6 +1,7 @@
 package hdsl.parser.structures.rhs
 
 import hdsl.compiler.structures.Wf
+import hdsl.parser.structures.DotNotationAccessor
 
 case class Expr(value: Any) extends Rhs {
 
@@ -20,12 +21,7 @@ case class Expr(value: Any) extends Rhs {
   private def evaluateConcatenatedString(parts: List[Any]): String = {
     parts.foldLeft("")((res: String, elem) => elem match {
       case s: String if isStringLiteral(s) => res + s.drop(1).dropRight(1)
-      case s: String => {
-        if (!Wf.variables.contains(s)) {
-          throw new RuntimeException(s"Cannot concatenate string $parts as variable $s is not defined")
-        }
-        res + Wf.variables(s).toString
-      }
+      case accessor: DotNotationAccessor => res + accessor.evaluate.toString
     })
   }
 

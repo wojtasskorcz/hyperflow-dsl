@@ -1,5 +1,6 @@
 package hdsl.parser.structures
 
+import hdsl.compiler.structures.{SignalInstance, ProcessInstance, Wf}
 import hdsl.parser.structures.rhs.Expr
 
 /**
@@ -28,6 +29,17 @@ case class DotNotationAccessor(parts: List[Any]) {
   def resolvedProperties: List[String] = resolve(parts.drop(base.parts.size))
 
   def resolvedParts: List[String] = resolve(parts)
+
+  // TODO implementation for other cases needed
+  def evaluate: Any = resolvedProperties.length match {
+    case 0 => Wf.variables.getOrElse(stringifiedBase, throw new RuntimeException(s"Could not evaluate $this: could not find a variable named $stringifiedBase"))
+    case 1 => throw new NotImplementedError()
+    case 2 => {
+      val processInstance = Wf.visibleProcessInstances.getOrElse(stringifiedBase, throw new RuntimeException(s"Could not evaluate $this: could not find a process named $stringifiedBase"))
+      val signalInstance = processInstance.getProperty(resolvedProperties(0)).get.asInstanceOf[SignalInstance]
+      signalInstance.getProperty(resolvedProperties(1)).get
+    }
+  }
 
   private def resolve(subparts: List[Any]): List[String] = subparts map {
     case s: String => s

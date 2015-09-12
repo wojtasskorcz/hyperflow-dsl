@@ -18,6 +18,7 @@ class ProcessInstanceUnitTest extends UnitSpec {
     // these should be overwritten by the instance settings
     processClass.setProperty(List("lvl1", "lvl2", "end3.1"), Expr(999))
     processClass.setProperty(List("lvl1", "end2.1", "fakeEnd"), Expr(999))
+    processClass.evaluateProperties()
     val instance = ProcessInstance("testInstance", ProcessInstantiation("testClass", null))
     instance.setProperty(List("end1"), Expr(1))
     instance.setProperty(List("lvl1", "end2.1"), Expr(4))

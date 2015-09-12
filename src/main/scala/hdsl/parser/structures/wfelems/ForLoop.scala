@@ -39,7 +39,7 @@ case class ForLoop(loopVar: String, loopIdx: String, array: String, wfElems: Lis
    * Loops over the loop's `array` using `typeMap` collection (either Wf.visibleSignalInstances or Wf
    * .visibleProcessInstances depending on the type of `array`) to store temporary variables. With each iteration all
    * WfElems contained within the loop are compiled.
-   * @param typeMap Wf.visibleSignalInstnaces (if Wf.visibleSignalInstances.contains(array)) or Wf
+   * @param typeMap Wf.visibleSignalInstances (if Wf.visibleSignalInstances.contains(array)) or Wf
    *                .visibleProcessInstances (if Wf.visibleProcessInstances.contains(array))
    * @tparam T either SignalInstance or ProcessInstance determined as described above
    */

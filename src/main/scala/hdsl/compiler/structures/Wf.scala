@@ -1,5 +1,6 @@
 package hdsl.compiler.structures
 
+import hdsl.parser.structures.traits.Instantiated
 import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
 
 import scala.collection.mutable
@@ -71,6 +72,13 @@ object Wf {
   def forAllCollections(f: mutable.Map[String, _] => Unit) = {
     val collectionsList = List(signalClasses, processClasses, visibleSignalInstances, visibleProcessInstances, variables)
     collectionsList.foreach(f)
+  }
+
+  def getInstance(name: String): Option[Instantiated] = {
+    visibleProcessInstances.get(name) match {
+      case None => visibleSignalInstances.get(name)
+      case someProcessIntance => someProcessIntance
+    }
   }
 
 }
