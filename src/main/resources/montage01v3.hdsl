@@ -1,10 +1,9 @@
 var timestamp = "20150705_164350_21580"
-var pimagesFilename = "pimages_" + timestamp + ".tbl"
 var atlasPrefix = "2mass-atlas-001124n-"
 var pAtlasPrefix = "p" + atlasPrefix
 var cAtlasPrefix = "c" + atlasPrefix
 
-process MProjectPP(in, bigRegion): (Signal, Signal) {
+process MProjectPP(in, bigRegion): (s1, s2) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mProjectPP"
@@ -37,7 +36,7 @@ for (proc, idx <- mProjectPPs) {
 
 
 
-process MDiffFit(diff, fitplane, atlas1, atlasArea1, atlas2, atlasArea2, bigRegion): (Signal, Signal) {
+process MDiffFit(diff, fitplane, atlas1, atlasArea1, atlas2, atlasArea2, bigRegion): (s1, s2) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mDiffFit"
@@ -81,11 +80,10 @@ for (proc, idx <- mDiffFits) {
 
 
 
-process MConcatFit(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10) {
+process MConcatFit(statfile, s2, s3, s4, s5, s6, s7, s8, s9, s10): (fits) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mConcatFit"
-  config.executor.args = ["statfile_" + timestamp + ".tbl", "fits.tbl", "."]
   amqpCommand()
 }
 
@@ -94,22 +92,28 @@ statfile -> mConcatFit -> allFits
 for (sig <- fits) {
   sig -> mConcatFit
 }
+statfile.filename = "statfile_" + timestamp + ".tbl"
+allFits.filename = "fits.tbl"
+mConcatFit.config.executor.args = [mConcatFit.statfile.filename, mConcatFit.fits.filename, "."]
 
 
 
-process MBgModel(s1, s2) {
+process MBgModel(pimages, allFits): (corrections) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mBgModel"
-  config.executor.args = ["-i", "100000", pimagesFilename, "fits.tbl", "corrections.tbl"]
   amqpCommand()
 }
 
-(pimages, allFits) -> MBgModel -> corrections
+mBgModel = new MBgModel()
+(pimages, allFits) -> mBgModel -> corrections
+pimages.filename = "pimages_" + timestamp + ".tbl"
+corrections.filename = "corrections.tbl"
+mBgModel.config.executor.args = ["-i", "100000", mBgModel.pimages.filename, mBgModel.allFits.filename, mBgModel.corrections.filename]
 
 
 
-process MBackground(atlas, atlasArea, pimages, corrections): (Signal, Signal) {
+process MBackground(atlas, atlasArea, pimages, corrections): (s1, s2) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mBackground"
@@ -121,16 +125,15 @@ mBackgrounds = new MBackground()[6]
 for (proc, idx <- mBackgrounds) {
   (atlases[idx], atlasAreas[idx], pimages, corrections) -> proc -> (masses[idx], massAreas[idx])
   proc.config.executor.args = ["-t", pAtlasPrefix + proc.atlas.fit2 + ".fits",
-    cAtlasPrefix + proc.atlas.fit2 + ".fits", pimagesFilename, "corrections.tbl"]
+    cAtlasPrefix + proc.atlas.fit2 + ".fits", proc.pimages.filename, proc.corrections.filename]
 }
 
 
 
-process MImgtbl(s1, s2, s3, s4, s5, s6, s7) {
+process MImgtbl(cimages, s2, s3, s4, s5, s6, s7): (newcimages) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mImgtbl"
-  config.executor.args = ["-t", "cimages_" + timestamp + ".tbl", ".", "newcimages.tbl"]
   amqpCommand()
 }
 
@@ -139,14 +142,16 @@ cimages -> mImgtbl -> newcimages
 for (sig <- masses) {
   sig -> mImgtbl
 }
+cimages.filename = "cimages_" + timestamp + ".tbl"
+newcimages.filename = "newcimages.tbl"
+mImgtbl.config.executor.args = ["-t", mImgtbl.cimages.filename, ".", mImgtbl.newcimages.filename]
 
 
 
-process MAdd(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14): (Signal, Signal) {
+process MAdd(newcimages, region, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14): (mosaic, s16) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mAdd"
-  config.executor.args = ["-e", "newcimages.tbl", "region_" + timestamp + ".hdr", "mosaic_" + timestamp + ".fits"]
   amqpCommand()
 }
 
@@ -155,31 +160,38 @@ mAdd = new MAdd()
 for (sig, idx <- masses) {
   (sig, massAreas[idx]) -> mAdd
 }
+region.filename = "region_" + timestamp + ".hdr"
+mosaic.filename = "mosaic_" + timestamp + ".fits"
+mAdd.config.executor.args = ["-e", mAdd.newcimages.filename, mAdd.region.filename, mAdd.mosaic.filename]
 
 
 
-process MShrink(s) {
+process MShrink(mosaic): (shrunken) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mShrink"
-  config.executor.args = ["mosaic_" + timestamp + ".fits", "shrunken_" + timestamp + ".fits", "1"]
   amqpCommand()
 }
 
-mosaic -> MShrink -> shrunken
+mShrink = new MShrink()
+mosaic -> mShrink -> shrunken
+shrunken.filename = "shrunken_" + timestamp + ".fits"
+mShrink.config.executor.args = [mShrink.mosaic.filename, mShrink.shrunken.filename, "1"]
 
 
 
-process MJPEG(s) {
+process MJPEG(shrunkenFits): (shrunkenJpg) {
   executor = "syscommand"
   firingLimit = 1
   config.executor.executable = "mJPEG"
-  config.executor.args = ["-ct", "1", "-gray", "shrunken_" + timestamp + ".fits",
-    "min", "max", "gaussianlog", "-out", "shrunken_" + timestamp + ".jpg"]
   amqpCommand()
 }
 
-shrunken -> MJPEG -> shrunkenJpg
+mjpeg = new MJPEG()
+shrunken -> mjpeg -> shrunkenJpg
+shrunkenJpg.filename = "shrunken_" + timestamp + ".jpg"
+mjpeg.config.executor.args = ["-ct", "1", "-gray", mjpeg.shrunkenFits.filename,
+  "min", "max", "gaussianlog", "-out", mjpeg.shrunkenJpg.filename]
 
 
 

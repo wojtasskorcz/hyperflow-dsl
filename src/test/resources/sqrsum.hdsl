@@ -2,13 +2,13 @@ signal NumberGenerator(: Array)
 signal Squares()
 signal Sums()
 
-process Sqr(nums: NumberGenerator): Squares {
+process Sqr(nums: NumberGenerator): (s: Squares) {
   parlevel = 0
   ordering = "true"
   sqr()
 }
 
-process Sum(sqrs: Squares): Sums {
+process Sum(sqrs: Squares): (s: Sums) {
   sum()
 }
 

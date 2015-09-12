@@ -36,7 +36,7 @@ case class DotNotationAccessor(parts: List[Any]) {
     case 1 => throw new NotImplementedError()
     case 2 => {
       val processInstance = Wf.visibleProcessInstances.getOrElse(stringifiedBase, throw new RuntimeException(s"Could not evaluate $this: could not find a process named $stringifiedBase"))
-      val signalInstance = processInstance.getProperty(resolvedProperties(0)).get.asInstanceOf[SignalInstance]
+      val signalInstance = processInstance.getProperty(resolvedProperties(0)).getOrElse(throw new RuntimeException(s"Could not evaluate $this: could not find signal ${resolvedProperties(0)} attached to process $stringifiedBase")).asInstanceOf[SignalInstance]
       signalInstance.getProperty(resolvedProperties(1)).get
     }
   }

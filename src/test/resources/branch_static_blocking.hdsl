@@ -1,12 +1,12 @@
-process Echo(in) {
+process Echo(in): (s) {
   echo()
 }
 
-process GenerateBranches(): (Signal, Signal, Signal) {
+process GenerateBranches(): (s1, s2, s3) {
   generateBranches()
 }
 
-process GatherBranches(b1, b2, b3) {
+process GatherBranches(b1, b2, b3): (s) {
   gatherBranches()
 }
 

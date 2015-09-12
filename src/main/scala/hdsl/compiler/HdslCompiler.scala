@@ -39,7 +39,7 @@ object HdslCompiler {
     nextSignalClass.control = Some("next")
     Wf.putSignalClass(nextSignalClassName -> nextSignalClass)
 
-    Wf.putProcessClass("Workflow" -> ProcessClass("Workflow", List.empty[Arg], List.empty[String], "workflow"))
+    Wf.putProcessClass("Workflow" -> ProcessClass("Workflow", List.empty[Arg], List.empty[Arg], "workflow"))
 
     Wf.putProcessInstance("workflow" -> ProcessInstance("workflow", ProcessInstantiation("Workflow", null)))
   }

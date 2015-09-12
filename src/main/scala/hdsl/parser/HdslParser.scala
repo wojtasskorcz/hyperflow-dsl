@@ -24,12 +24,8 @@ object HdslParser extends JavaTokenParsers {
   def signalClassArgType: Parser[String] = "String" | "Array"
 
   def processClass: Parser[ProcessClass] =
-    "process" ~> ident ~ ("(" ~> processClassArgs <~ ")") ~ opt(":" ~> processClassOutArgs) ~ ("{" ~> processBody <~ "}") ^^ {
-      case name ~ args ~ returnTypesOpt ~ ((settings, invocation)) => {
-        val returnTypes = returnTypesOpt match {
-          case Some(types) => types
-          case None => List("Signal")
-        }
+    "process" ~> ident ~ ("(" ~> processClassArgs <~ ")") ~ (":" ~> "(" ~> processClassArgs <~ ")") ~ ("{" ~> processBody <~ "}") ^^ {
+      case name ~ args ~ returnTypes ~ ((settings, invocation)) => {
         val processClass = ProcessClass(name, args, returnTypes, invocation)
         settings.foreach(assignment => processClass.setProperty(assignment.lhs.resolvedParts, assignment.rhs))
         processClass
@@ -39,13 +35,6 @@ object HdslParser extends JavaTokenParsers {
   def processClassArgs: Parser[List[Arg]] = repsep(processClassArg, ",")
 
   def processClassArg: Parser[Arg] = argWithModifiers | argWithImplicitType
-
-  def processClassOutArgs: Parser[List[String]] = "Unit" ^^ {case _ => List()} |
-    ident ^^ {case returnType => List(returnType)} |
-    "(" ~> rep1sep(ident, ",") <~ ")" ^^ {
-      case returnTypes if returnTypes.contains("Unit") => throw new RuntimeException("Cannot declare 'Unit' as one multiple (tupled) return types of a process")
-      case returnTypes => returnTypes
-    }
 
   def argWithModifiers: Parser[Arg] = ident ~ ":" ~ rep(modifier) ~ ident ^^ {
     case name ~ ":" ~ modifiers ~ argType => Arg(name, argType, modifiers)

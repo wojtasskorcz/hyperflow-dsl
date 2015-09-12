@@ -3,37 +3,35 @@ signal Config(xpath: String, start_time: String, end_time: String, baseTemp: Str
 signal Stations()
 signal DataParts()
 
-process ReadDataSets(x: XmlData, c: Config): Stations {
+process ReadDataSets(x: XmlData, c: Config): (s: Stations) {
   config.args = "someArgs"
   config.constantArgs = "constantArgs"
   genXmlCollection()
 }
 
-process PartitionData(s: Stations): DataParts {
+process PartitionData(s: Stations): (d: DataParts) {
   partitionData()
 }
 
-process ComputeStats(d: DataParts, c: sticky Config) {
+process ComputeStats(d: DataParts, c: sticky Config): (s) {
   parlevel = 3
   computeStats()
 }
 
-process PlotGraphs(stats) {
+process PlotGraphs(stats): (s) {
   parlevel = 3
   plotData()
 }
 
-process CollectPlots(graph): Unit {
+process CollectPlots(graph): () {
   collectGraphs()
 }
 
 xml = new XmlData("data.xml")
 config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
 
-// przez var oznaczamy zmienne nie będące sygnałami ani procesami
 var n = 3
 
-// deklaracje tablic procesów i sygnałów
 pArr = new ReadDataSets()[n]
 stationsArr = new Stations()[n]
 dataPartsArr = new DataParts()[n]
@@ -42,10 +40,6 @@ for (p, idx <- pArr) {
   p.ordering = true
   p.config.args = ""
 
-  // w kazdym obiegu petli tworzony jest nowy proces PartitionData
   (xml, config) -> p -> stationsArr[idx] -> PartitionData -> dataPartsArr[idx]
-
-  // statsArr i graphArr są implicite definiowane jako tablice sygnałów, tak
-  // … jak wcześniej implicite były definiowane sygnały stats i graph
   (dataPartsArr[idx], config) -> ComputeStats -> statsArr[idx] -> PlotGraphs -> graphArr[idx]:stationsArr[idx].count -> CollectPlots
 }

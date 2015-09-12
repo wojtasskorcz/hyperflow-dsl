@@ -3,61 +3,37 @@ signal Config(xpath: String, start_time: String, end_time: String, baseTemp: Str
 signal Stations()
 signal DataParts()
 
-process ReadDataSets(x: XmlData, c: Config): Stations {
+process ReadDataSets(x: XmlData, c: Config): (s: Stations) {
   config.args = "someArgs"
   config.constantArgs = "constantArgs"
   genXmlCollection()
 }
 
-process PartitionData(s: Stations): DataParts {
+process PartitionData(s: Stations): (d: DataParts) {
   partitionData()
 }
 
-// when not declaring a return type, a generic Signal type is returned
-// something like Object type in Java
-process ComputeStats(d: DataParts, c: sticky Config) {
+process ComputeStats(d: DataParts, c: sticky Config): (s) {
   parlevel = 3
   computeStats()
 }
 
-// same as with 'ComputeStats' - leaving argument type undeclared…
-// … implicitly sets it to Signal
-process PlotGraphs(stats) {
+process PlotGraphs(stats): (s) {
   parlevel = 3
   plotData()
 }
 
-// like in Scala, returning Unit means, that no usable value is returned
-// process CollectPlots(graph, cnt: CountSignal): Unit {
-// graph.count = cnt
-process CollectPlots(graph): Unit {
+process CollectPlots(graph): () {
   collectGraphs()
 }
 
 xml = new XmlData("data.xml")
 config = new Config("//Collection[@label='station']", "1.196499599E9", "1.197359999E9", "10")
 
-// processes are first-order citizens (like functions in functional languages)
 p = new ReadDataSets()
 p.ordering = true
 p.config.args = ""
 p.realNumArg = 2.5
 
-// type of 'stations' is inferred from the return value of 'ReadDataSets'
-// 'p' should be invoked only once, as each process instance has only one…
-// …set of inputs and outputs; invoking it again will cause compilation error
-// stations = p(xml, config)
-// (xml, config) -> p -> stations
-
-// invoking a process inline automatically creates a new instance of it
-// dataParts = PartitionData(stations)
 (xml, config) -> p -> stations -> PartitionData -> dataParts
-
-// stats = ComputeStats(dataParts, config)
-// graph = PlotGraphs(stats)
-
-// as every signal has only one source ('stations' was emitted from 'p')...
-// … we can attach a count-output to the process that created this signal
-// CollectPlots(graph, stations.count)
-// CollectPlots(graph:stations.count)
 (dataParts, config) -> ComputeStats -> stats -> PlotGraphs -> graph:stations.count -> CollectPlots

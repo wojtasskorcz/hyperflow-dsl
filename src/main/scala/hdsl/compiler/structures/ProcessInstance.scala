@@ -1,6 +1,7 @@
 package hdsl.compiler.structures
 
 import hdsl._
+import hdsl.parser.structures.Arg
 import hdsl.parser.structures.rhs.ProcessInstantiation
 import hdsl.parser.structures.traits.Instantiated
 import hdsl.parser.structures.wfelems.{ProcessClass, SignalClass}
@@ -96,7 +97,7 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   def getNextOutSignalClass: Option[SignalClass] =
     if (name == "workflow") Wf.signalClasses.get("Signal")
     else if (outs.size >= processClass.returnTypes.size) None
-    else Some(Wf.signalClasses(processClass.returnTypes(outs.size)))
+    else Some(Wf.signalClasses(processClass.returnTypes(outs.size).argType))
 
   def getNextInSignalClass: Option[SignalClass] =
     if (name == "workflow") Wf.signalClasses.get("Signal")
@@ -109,17 +110,14 @@ case class ProcessInstance(name: String, instantiation: ProcessInstantiation) ex
   }
 
   override def getProperty(propertyName: String): Option[Any] = {
-    def getAttachedInput(propertyName: String): Option[SignalInstance] = processClass.args.indexWhere(arg => arg.name == propertyName) match {
-      case -1 => None
-      case idx => Some(ins(idx)._1)
-    }
+    def getAttachedSignal(args: List[Arg], signals: MutableList[(SignalInstance, String)], propertyName: String): Option[SignalInstance] =
+      args.indexWhere(arg => arg.name == propertyName) match {
+        case -1 => None
+        case idx => Some(signals(idx)._1)
+      }
 
-    val containerProperty = super.getProperty(propertyName)
-    if (containerProperty.isDefined) {
-      containerProperty
-    } else {
-      getAttachedInput(propertyName)
-    }
+    super.getProperty(propertyName).orElse(getAttachedSignal(processClass.args, ins, propertyName))
+      .orElse(getAttachedSignal(processClass.returnTypes, outs, propertyName))
   }
 
 }
