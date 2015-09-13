@@ -3,25 +3,25 @@ signal Config(xpath: String, start_time: String, end_time: String, baseTemp: Str
 signal Stations()
 signal DataParts()
 
-process ReadDataSets(x: XmlData, c: Config): Stations {
+process ReadDataSets(x: XmlData, c: Config): (s: Stations) {
   genXmlCollection()
 }
 
-process PartitionData(s: Stations): DataParts {
+process PartitionData(s: Stations): (d: DataParts) {
   partitionData()
 }
 
-process ComputeStats(d: DataParts, c: sticky Config) {
+process ComputeStats(d: DataParts, c: sticky Config): (s) {
   parlevel = 3
   computeStats()
 }
 
-process PlotGraphs(stats) {
+process PlotGraphs(stats): (s) {
   parlevel = 3
   plotData()
 }
 
-process CollectPlots(graph): Unit {
+process CollectPlots(graph): () {
   collectGraphs()
 }
 
